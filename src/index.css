@@ -1,0 +1,77 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Be Vietnam Pro', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --color-brand: #0b1f3a;
+  --color-brand-600: #12305a;
+  --color-brand-500: #1d4ed8;
+  --color-accent: #00c805;
+  --color-accent-600: #00a804;
+
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-line: #e7ebf1;
+  --color-canvas: #f5f7fa;
+
+  --color-up: #00a63e;
+  --color-down: #e5413a;
+  --color-ref: #c99a06;
+  --color-ceil: #a033d6;
+  --color-floor: #0aa7bb;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes flash-up {
+  from { background-color: color-mix(in srgb, var(--color-up) 22%, transparent); }
+  to { background-color: transparent; }
+}
+
+@keyframes flash-down {
+  from { background-color: color-mix(in srgb, var(--color-down) 22%, transparent); }
+  to { background-color: transparent; }
+}
+
+.flash-up { animation: flash-up 0.9s ease-out; }
+.flash-down { animation: flash-down 0.9s ease-out; }
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.slide-in { animation: slide-in 0.22s ease-out; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up { animation: fade-up 0.25s ease-out; }
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.caret::after {
+  content: '▍';
+  margin-left: 1px;
+  animation: blink 1s steps(1) infinite;
+  color: var(--color-muted);
+}

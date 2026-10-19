@@ -1,0 +1,14 @@
+node_modules
+dist
+*.local
+.DS_Store
+server/.venv
+server/.env
+.env.local
+supabase/signing_keys.json
+supabase/.env
+supabase/.temp
+supabase/.branches
+__pycache__
+.pytest_cache
+*.tsbuildinfo
