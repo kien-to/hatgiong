@@ -22,6 +22,27 @@ export const GLOSSARY: GlossaryEntry[] = [
     body: 'P/E = Giá cổ phiếu ÷ Lợi nhuận trên mỗi cổ phiếu (EPS). P/E bằng 10 nghĩa là bạn trả 10 đồng cho mỗi 1 đồng lợi nhuận hằng năm. P/E thấp chưa chắc là "rẻ" (có thể công ty đang gặp vấn đề), P/E cao chưa chắc là "đắt" (thị trường kỳ vọng tăng trưởng mạnh). Hãy so sánh P/E giữa các công ty cùng ngành, ví dụ ngân hàng với ngân hàng.',
   },
   {
+    id: 'pb',
+    term: 'P/B (Giá / Giá trị sổ sách)',
+    aliases: ['p/b', 'pb', 'chỉ số p/b', 'giá trị sổ sách', 'book value'],
+    short: 'Giá cổ phiếu so với giá trị tài sản ròng trên mỗi cổ phiếu.',
+    body: 'P/B = Giá ÷ Giá trị sổ sách mỗi cổ phiếu (tài sản trừ nợ, chia cho số cổ phiếu). P/B bằng 1 nghĩa là bạn trả đúng bằng giá trị tài sản ròng trên sổ sách. P/B hay được dùng để so sánh ngân hàng với nhau, vì tài sản của ngân hàng chủ yếu là tiền và khoản vay. P/B thấp có thể là rẻ — hoặc thị trường lo ngại chất lượng tài sản.',
+  },
+  {
+    id: 'roe',
+    term: 'ROE và ROA',
+    aliases: ['roe', 'roa', 'lợi nhuận trên vốn', 'tỷ suất sinh lời', 'hiệu quả sinh lời'],
+    short: 'Công ty tạo ra bao nhiêu lợi nhuận từ vốn chủ sở hữu (ROE) và từ tổng tài sản (ROA).',
+    body: 'ROE 20% nghĩa là cứ 100 đồng vốn của cổ đông, công ty tạo ra 20 đồng lợi nhuận mỗi năm. ROA tính trên toàn bộ tài sản, kể cả phần đi vay. ROE cao mà ROA thấp thường có nghĩa công ty dùng nhiều nợ — điều này bình thường với ngân hàng nhưng đáng chú ý với doanh nghiệp sản xuất. Hãy so ROE với các công ty cùng ngành và xem nó có ổn định qua nhiều năm không.',
+  },
+  {
+    id: 'nim-npl',
+    term: 'NIM và nợ xấu (NPL) của ngân hàng',
+    aliases: ['nim', 'npl', 'nợ xấu', 'biên lãi ròng', 'biên lãi thuần'],
+    short: 'Hai chỉ số quan trọng nhất để hiểu một ngân hàng kiếm tiền và rủi ro thế nào.',
+    body: 'NIM (biên lãi ròng) là chênh lệch giữa lãi ngân hàng thu từ cho vay và lãi trả cho người gửi tiền, tính trên tài sản sinh lãi — NIM 3% nghĩa là mỗi 100 đồng cho vay mang lại khoảng 3 đồng lãi ròng mỗi năm. NPL (tỷ lệ nợ xấu) là phần khoản vay khó đòi; ở Việt Nam, dưới 2% thường được xem là tốt, và Mầm khuyên bạn để ý xu hướng tăng hay giảm qua từng quý.',
+  },
+  {
     id: 'co-tuc',
     term: 'Cổ tức',
     aliases: ['cổ tức', 'dividend', 'tỷ suất cổ tức'],

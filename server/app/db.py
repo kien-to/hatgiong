@@ -478,22 +478,68 @@ async def process_dividends(today) -> int:
     return handled
 
 
+FUNDAMENTAL_FIELDS = ("pe", "pb", "eps", "roe", "roa", "dividend_yield", "nim", "npl")
+
+
+def _fundamental(r: asyncpg.Record) -> dict:
+    return {
+        "symbol": r["symbol"],
+        "pe": _num(r["pe"]),
+        "pb": _num(r["pb"]),
+        "eps": _num(r["eps"]),
+        "roe": _num(r["roe"]),
+        "roa": _num(r["roa"]),
+        "dividendYield": _num(r["dividend_yield"]),
+        "dividendYear": r["dividend_year"],
+        "nim": _num(r["nim"]),
+        "npl": _num(r["npl"]),
+        "period": r["period"],
+        "description": r["description"],
+        "source": r["source"],
+        "asOf": r["as_of"].isoformat(),
+    }
+
+
 async def fundamentals() -> list[dict]:
-    rows = await pool().fetch("select * from public.stock_fundamentals")
-    return [
-        {
-            "symbol": r["symbol"],
-            "pe": _num(r["pe"]),
-            "pb": _num(r["pb"]),
-            "eps": _num(r["eps"]),
-            "roe": _num(r["roe"]),
-            "dividendYield": _num(r["dividend_yield"]),
-            "description": r["description"],
-            "source": r["source"],
-            "asOf": r["as_of"].isoformat(),
-        }
-        for r in rows
-    ]
+    return [_fundamental(r) for r in await pool().fetch("select * from public.stock_fundamentals")]
+
+
+async def get_fundamental(symbol: str) -> tuple[dict, datetime] | None:
+    row = await pool().fetchrow("select * from public.stock_fundamentals where symbol = $1", symbol)
+    return (_fundamental(row), row["updated_at"]) if row else None
+
+
+async def cache_fundamental(symbol: str, data: dict, source: str) -> dict:
+    def dec(v):
+        return None if v is None else Decimal(str(v))
+
+    row = await pool().fetchrow(
+        """insert into public.stock_fundamentals
+             (symbol, pe, pb, eps, roe, roa, dividend_yield, dividend_year, nim, npl, period, description, source, as_of)
+           values ($1, $2, $3, null, $4, $5, $6, $7, $8, $9, $10, $11, $12, current_date)
+           on conflict (symbol) do update set pe = excluded.pe, pb = excluded.pb, roe = excluded.roe, roa = excluded.roa,
+             dividend_yield = excluded.dividend_yield, dividend_year = excluded.dividend_year, nim = excluded.nim,
+             npl = excluded.npl, period = excluded.period, description = excluded.description,
+             source = excluded.source, as_of = excluded.as_of, updated_at = now()
+           where public.stock_fundamentals.source = excluded.source
+           returning *""",
+        symbol,
+        dec(data["pe"]),
+        dec(data["pb"]),
+        dec(data["roe"]),
+        dec(data["roa"]),
+        dec(data["dividendYield"]),
+        data["dividendYear"],
+        dec(data["nim"]),
+        dec(data["npl"]),
+        data["period"],
+        data["description"],
+        source,
+    )
+    if row is None:
+        existing = await get_fundamental(symbol)
+        return existing[0] if existing else {}
+    return _fundamental(row)
 
 
 # --- tutor usage ---

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { CandleChart, LineChart } from '@/components/charts'
 import { TradeTicket } from '@/components/TradeTicket'
@@ -36,6 +36,11 @@ export function StockPage() {
   const [hover, setHover] = useState<number | null>(null)
   const [side, setSide] = useState<Side>('buy')
   const history = useHistory(stock?.symbol ?? '', range)
+  const loadFundamentals = useCatalog((s) => s.loadFundamentals)
+
+  useEffect(() => {
+    if (catalogReady && symbol) void loadFundamentals(symbol)
+  }, [catalogReady, symbol, loadFundamentals])
 
   if (!stock && !catalogReady) return <div className="py-20 text-center text-muted">Đang tải dữ liệu…</div>
   if (!stock) {
@@ -195,22 +200,28 @@ export function StockPage() {
             />
             <Stat label={estimated ? 'P/E (ước tính)' : 'P/E'} value={stock.profile?.pe ? `${estimated ? '~' : ''}${formatDecimal(stock.profile.pe)}` : '—'} onClick={() => ask('P/E là gì?')} />
             <Stat
-              label={estimated ? 'Cổ tức (ước tính)' : 'Tỷ suất cổ tức'}
+              label={estimated ? 'Cổ tức (ước tính)' : `Tỷ suất cổ tức${stock.profile?.dividendYear ? ` (${stock.profile.dividendYear})` : ''}`}
               value={stock.profile?.dividendYield ? `${estimated ? '~' : ''}${formatDecimal(stock.profile.dividendYield)}%` : '—'}
               onClick={() => ask('Cổ tức là gì?')}
             />
             <Stat label="Ngành" value={stock.sector} />
             <Stat label="Lô tối thiểu" value={formatCompactVND(quote.price * 100)} onClick={() => ask('Lô giao dịch là gì?')} />
-            {stock.profile?.pb ? <Stat label="P/B" value={formatDecimal(stock.profile.pb)} /> : null}
-            {stock.profile?.roe ? <Stat label="ROE" value={`${formatDecimal(stock.profile.roe)}%`} /> : null}
+            {stock.profile?.pb ? <Stat label="P/B" value={formatDecimal(stock.profile.pb)} onClick={() => ask('Chỉ số P/B là gì?')} /> : null}
+            {stock.profile?.roe ? <Stat label="ROE" value={`${formatDecimal(stock.profile.roe)}%`} onClick={() => ask('ROE là gì?')} /> : null}
+            {stock.profile?.roa ? <Stat label="ROA" value={`${formatDecimal(stock.profile.roa)}%`} onClick={() => ask('ROA là gì?')} /> : null}
+            {stock.profile?.nim ? <Stat label="Biên lãi ròng (NIM)" value={`${formatDecimal(stock.profile.nim)}%`} onClick={() => ask('NIM của ngân hàng là gì?')} /> : null}
+            {stock.profile?.npl ? <Stat label="Nợ xấu (NPL)" value={`${formatDecimal(stock.profile.npl)}%`} onClick={() => ask('Nợ xấu ngân hàng là gì?')} /> : null}
             {stock.profile?.eps ? <Stat label="EPS" value={`${formatNumber(stock.profile.eps)} ₫`} /> : null}
           </div>
-          {stock.profile?.source && (
-            <p className="mt-3 text-[11px] text-muted">
-              Nguồn chỉ số: {stock.profile.source}
-              {stock.profile.asOf ? `, cập nhật ${formatDate(new Date(stock.profile.asOf).getTime())}` : ''}
-            </p>
-          )}
+          <p className="mt-3 text-[11px] text-muted">
+            {stock.profile?.source
+              ? `Nguồn chỉ số: ${stock.profile.source}${stock.profile.period ? ` · ${stock.profile.period} (12 tháng gần nhất)` : ''}${
+                  stock.profile.asOf ? ` · cập nhật ${formatDate(new Date(stock.profile.asOf).getTime())}` : ''
+                }`
+              : stock.profile
+                ? 'Chỉ số ước tính, có thể đã cũ.'
+                : 'Chưa có dữ liệu chỉ số cho mã này.'}
+          </p>
           <div className="mt-5 border-t border-line pt-4">
             <h3 className="text-sm font-semibold">Về {stock.symbol}</h3>
             <p className="mt-1 text-sm leading-relaxed text-muted">

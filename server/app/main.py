@@ -5,7 +5,7 @@ import re
 import time
 import uuid
 from contextlib import asynccontextmanager
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Literal
 
 from fastapi import Depends, FastAPI, HTTPException, Query, WebSocket
@@ -19,7 +19,7 @@ from .auth import AuthUser, current_user
 from .hub import BoardHub
 from .settings import CORS_ORIGINS
 from .tutor import has_credentials, stream_reply
-from .vietcap import MarketDataError, VietcapClient
+from .vietcap import FUNDAMENTALS_SOURCE, MarketDataError, VietcapClient
 
 logging.basicConfig(level=logging.INFO)
 
@@ -112,6 +112,31 @@ async def fundamentals():
     rows = await db.fundamentals()
     _fundamentals_cache = (time.monotonic(), rows)
     return rows
+
+
+FUNDAMENTALS_MAX_AGE = timedelta(hours=24)
+
+
+@app.get("/api/fundamentals/{symbol}")
+async def fundamental(symbol: str):
+    symbol = _symbol(symbol)
+    cached = await db.get_fundamental(symbol)
+    if cached:
+        data, updated_at = cached
+        if data["source"] != FUNDAMENTALS_SOURCE or datetime.now(timezone.utc) - updated_at < FUNDAMENTALS_MAX_AGE:
+            return data
+    try:
+        listing = {s["symbol"]: s for s in await vietcap.listing()}
+        if symbol not in listing:
+            raise HTTPException(404, f"unknown symbol {symbol}")
+        fresh = await vietcap.fundamentals(symbol, is_fund=listing[symbol]["type"] == "ETF")
+    except MarketDataError:
+        fresh = None
+    if fresh is None:
+        if cached:
+            return cached[0]
+        raise HTTPException(404, f"no fundamentals for {symbol}")
+    return await db.cache_fundamental(symbol, fresh, FUNDAMENTALS_SOURCE)
 
 
 @app.get("/api/board")

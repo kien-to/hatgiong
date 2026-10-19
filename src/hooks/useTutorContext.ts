@@ -70,6 +70,13 @@ export function useTutorContext(): TutorContext {
               changePct: changePct(quote),
               approxPe: stock.profile?.pe ?? undefined,
               approxDividendYield: stock.profile?.dividendYield ?? undefined,
+              pb: stock.profile?.pb ?? undefined,
+              roe: stock.profile?.roe ?? undefined,
+              fundamentals: stock.profile?.source
+                ? `${stock.profile.source}, TTM ${stock.profile.period ?? ''}, as of ${stock.profile.asOf ?? ''}`
+                : stock.profile
+                  ? 'hand-entered estimates, may be stale'
+                  : 'none available',
             }
           : undefined,
     }

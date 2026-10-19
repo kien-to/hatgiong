@@ -6,7 +6,12 @@ export interface StockProfile {
   pb?: number | null
   eps?: number | null
   roe?: number | null
+  roa?: number | null
   dividendYield?: number | null
+  dividendYear?: number | null
+  nim?: number | null
+  npl?: number | null
+  period?: string | null
   marketCapTrillion?: number
   source?: string
   asOf?: string

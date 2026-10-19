@@ -68,6 +68,9 @@ export interface TutorContext {
     changePct: number
     approxPe?: number
     approxDividendYield?: number
+    pb?: number
+    roe?: number
+    fundamentals?: string
   }
 }
 

@@ -87,7 +87,7 @@ supabase/migrations/      Schema, RLS, signup trigger, pg_cron guest cleanup
 - Prices come from Vietcap's public web endpoints, which aren't a documented API. Use a licensed feed before launch.
 - Orders fill against the last traded price, not the order book. There are no ATO/ATC order types.
 - Vietnamese public holidays aren't in the trading calendar.
-- P/E, dividend yield and company descriptions exist only for 27 curated stocks. Other fundamentals need a data provider.
-- There's no dividend data feed yet, only the CSV loader.
+- Fundamentals (P/E, P/B, ROE, ROA, dividend yield, NIM/NPL for banks, company description) come from Vietcap IQ's public endpoints, fetched when a stock page is opened and cached for 24 hours. Analyst ratings and target prices in that feed are deliberately ignored. Rows loaded from a licensed CSV (`server/scripts/load_fundamentals.py`) take priority.
+- There's no dividend-event feed yet, only the CSV loader (`server/scripts/load_corporate_actions.py`).
 - Signing into an existing account from a guest session doesn't merge the guest's progress.
 - Vietnamese only, light mode only.

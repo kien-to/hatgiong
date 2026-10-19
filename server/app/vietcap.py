@@ -6,6 +6,8 @@ should expect failures.
 """
 
 import asyncio
+import html
+import re
 import time
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -56,8 +58,61 @@ ICB_SECTORS = {
 RANGE_DAYS = {"1W": 5, "1M": 22, "3M": 66, "1Y": 250}
 
 
+IQ_BASE = "https://iq.vietcap.com.vn/api/iq-insight-service/v1"
+IQ_HEADERS = {"Referer": "https://iq.vietcap.com.vn/", "Origin": "https://iq.vietcap.com.vn", "User-Agent": HEADERS["User-Agent"]}
+FUNDAMENTALS_SOURCE = "Vietcap IQ"
+DESCRIPTION_MAX = 1000
+
+
 class MarketDataError(Exception):
     pass
+
+
+def _pct(x) -> float | None:
+    return round(x * 100, 2) if isinstance(x, (int, float)) and x != 0 else None
+
+
+def _ratio(x) -> float | None:
+    return round(x, 2) if isinstance(x, (int, float)) and x > 0 else None
+
+
+def _plain(markup: str | None) -> str | None:
+    if not markup:
+        return None
+    text = html.unescape(re.sub(r"<[^>]+>", " ", markup))
+    text = re.sub(r"\s+", " ", text).strip()
+    return text[:DESCRIPTION_MAX] or None
+
+
+def parse_fundamentals(ratios: list[dict], profile: dict | None, is_fund: bool = False) -> dict | None:
+    """Latest trailing-12-month ratios plus the company description.
+
+    Deliberately ignores the analyst fields in the profile (rating, target price, projected TSR):
+    the app never shows investment recommendations.
+    """
+    description = _plain((profile or {}).get("profile"))
+    quarterly = sorted((r for r in ratios if 1 <= (r.get("quarter") or 0) <= 4), key=lambda r: (r["yearReport"], r["quarter"]))
+    if is_fund:
+        empty = dict.fromkeys(("pe", "pb", "roe", "roa", "dividendYield", "dividendYear", "nim", "npl", "period"))
+        return {**empty, "description": description} if description else None
+    if not quarterly:
+        return None
+    latest = quarterly[-1]
+    yearly = sorted((r for r in ratios if r.get("quarter") == 5 and (r.get("dividendYield") or 0) > 0), key=lambda r: r["yearReport"])
+    dividend = yearly[-1] if yearly and yearly[-1]["yearReport"] >= latest["yearReport"] - 1 else None
+    is_bank = bool((latest.get("netInterestMargin") or 0) > 0)
+    return {
+        "pe": _ratio(latest.get("pe")),
+        "pb": _ratio(latest.get("pb")),
+        "roe": _pct(latest.get("roe")),
+        "roa": _pct(latest.get("roa")),
+        "dividendYield": _pct(dividend["dividendYield"]) if dividend else None,
+        "dividendYear": dividend["yearReport"] if dividend else None,
+        "nim": _pct(latest.get("netInterestMargin")) if is_bank else None,
+        "npl": _pct(latest.get("npl")) if is_bank else None,
+        "period": f"Q{latest['quarter']}/{latest['yearReport']}",
+        "description": description,
+    }
 
 
 class _Cache:
@@ -136,6 +191,18 @@ class VietcapClient:
 
     async def board_map(self) -> dict[str, dict]:
         return {q["symbol"]: q for q in await self.board()}
+
+    async def fundamentals(self, symbol: str, is_fund: bool = False) -> dict | None:
+        async def get(path: str):
+            try:
+                r = await self._http.get(f"{IQ_BASE}/company/{symbol}{path}", headers=IQ_HEADERS)
+                r.raise_for_status()
+                return r.json().get("data")
+            except (httpx.HTTPError, ValueError) as e:
+                raise MarketDataError(f"Vietcap IQ request for {symbol}{path} failed: {e}") from e
+
+        ratios, profile = await asyncio.gather(get("/statistics-financial"), get(""))
+        return parse_fundamentals(ratios or [], profile, is_fund)
 
     async def quotes(self, symbols: list[str]) -> list[dict]:
         key = "quotes:" + ",".join(sorted(symbols))
