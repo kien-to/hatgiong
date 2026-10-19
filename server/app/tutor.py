@@ -1,6 +1,6 @@
 import json
 import os
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 
 import anthropic
 
@@ -29,8 +29,11 @@ Vietnamese market rules the app enforces (use these exact numbers):
 - HOSE tick sizes: under 10,000 ₫ → 10 ₫; 10,000–49,950 ₫ → 50 ₫; 50,000 ₫ and above → 100 ₫. HNX/UPCoM → 100 ₫.
 - Board lot is 100 shares; buys must be multiples of 100. Odd lots can only be sold to close out a position.
 - Order types in the app: limit (LO) and market (MP). Pending limit buys reserve cash including fees.
+- Trading hours (Vietnam time, Mon–Fri): ATO 9:00–9:15, continuous matching 9:15–11:30 and 13:00–14:30, ATC 14:30–14:45. Orders fill only during continuous matching. Market orders are only accepted then; limit orders placed outside it wait for the next session. LO orders are day orders: anything unfilled at 15:00 expires.
+- Settlement T+2: shares bought on day T can be sold from the afternoon of T+2 (trading days). Sale proceeds are usable immediately in the app.
 - Fees: 0.15% brokerage on every fill; 0.1% personal income tax on the value of every sale, profit or loss. Cost basis (giá vốn) includes buy fees.
-- Settlement is T+2 in the real market; the app does not simulate the wait yet.
+- Dividends: holders at the start of the ex-date (ngày GDKHQ) are entitled. Cash dividends are credited on the payment date minus 5% personal income tax; stock dividends add shares and lower the per-share cost basis.
+- Users can write a short reason for each order. When the context includes recent trades with reasons, use them to help the user reflect: was the reason about the business, the price move, or a feeling? Did the outcome teach anything? Judge the process, not whether the trade made money.
 
 Formatting: the chat renders only **bold**, _italic_, "- " bullet lists, "1. " numbered lists and blank-line paragraphs. Don't use headings, tables, code blocks or links."""
 
@@ -60,7 +63,9 @@ def _context_message(context: dict) -> dict:
     }
 
 
-async def stream_reply(message: str, history: list[dict], context: dict) -> AsyncIterator[str]:
+async def stream_reply(
+    message: str, history: list[dict], context: dict, on_usage: Callable[[int, int], Awaitable[None]] | None = None
+) -> AsyncIterator[str]:
     messages = [{"role": m["role"], "content": m["content"]} for m in history if m.get("content")]
     messages.append({"role": "user", "content": message})
     messages.append(_context_message(context))
@@ -86,6 +91,8 @@ async def stream_reply(message: str, history: list[dict], context: dict) -> Asyn
             final = await stream.get_final_message()
             if final.stop_reason == "refusal" and not sent:
                 yield REFUSAL_MESSAGE
+            if on_usage:
+                await on_usage(final.usage.input_tokens, final.usage.output_tokens)
     except anthropic.AuthenticationError:
         yield "Mầm chưa được kết nối: máy chủ thiếu khóa API Anthropic hợp lệ."
     except anthropic.RateLimitError:

@@ -1,4 +1,4 @@
-import { apiFetch } from '@/lib/api'
+import { API_BASE, ApiError, apiFetch } from '@/lib/api'
 import type { AIService, ChatMessage, Insight, TutorContext } from '../types'
 
 export class HttpAIService implements AIService {
@@ -6,7 +6,7 @@ export class HttpAIService implements AIService {
 
   constructor(
     private readonly fallback: AIService,
-    private readonly baseUrl = '/api',
+    private readonly baseUrl = API_BASE,
   ) {}
 
   private available(): Promise<boolean> {
@@ -32,7 +32,11 @@ export class HttpAIService implements AIService {
           context,
         }),
       })
-    } catch {
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 429 && e.body.detail) {
+        yield e.body.detail
+        return
+      }
       yield* this.fallback.reply(message, history, context)
       return
     }

@@ -11,6 +11,7 @@ const base: TutorContext = {
   startingCash: 100_000_000,
   positions: [],
   filledOrders: 0,
+  recentTrades: [],
 }
 
 describe('mock tutor', () => {

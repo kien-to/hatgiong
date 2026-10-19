@@ -41,6 +41,21 @@ export function useTutorContext(): TutorContext {
       startingCash: account.startingCash,
       positions,
       filledOrders: account.orders.filter((o) => o.status === 'filled').length,
+      recentTrades: account.orders
+        .filter((o) => o.status === 'filled' && o.fillPrice)
+        .slice(0, 10)
+        .map((o) => {
+          const now = quotes[o.symbol]?.price
+          return {
+            symbol: o.symbol,
+            side: o.side,
+            qty: o.qty,
+            price: o.fillPrice!,
+            reason: o.note ?? undefined,
+            daysAgo: Math.floor((Date.now() - (o.filledAt ?? o.createdAt)) / 86_400_000),
+            changeSincePct: now ? ((now - o.fillPrice!) / o.fillPrice!) * 100 : undefined,
+          }
+        }),
       stock:
         stock && quote
           ? {

@@ -4,9 +4,12 @@ import { AskButton, Card, PnlText, Segmented, StockLogo } from '@/components/ui'
 import { getStock } from '@/store/catalog'
 import { formatDateTime, formatDecimal, formatNumber, formatPct, formatPrice, formatSignedVND, formatVND } from '@/domain/format'
 import { buyingPower, holdingsValue, totalEquity } from '@/domain/trading'
+import type { OrderStatus } from '@/domain/types'
 import { useAskTutor } from '@/hooks/useTutorContext'
 import { useMarket } from '@/store/market'
 import { useUser } from '@/store/user'
+
+const STATUS_LABEL: Record<OrderStatus, string> = { pending: 'Đang chờ', filled: 'Đã khớp', cancelled: 'Đã hủy', expired: 'Hết hạn' }
 
 const SECTOR_COLORS = ['#1d4ed8', '#00a63e', '#c99a06', '#a033d6', '#0aa7bb', '#e5413a', '#0f766e', '#c2410c', '#475569', '#be185d']
 
@@ -113,7 +116,14 @@ export function PortfolioPage() {
                         </div>
                       </Link>
                     </td>
-                    <td className="px-3 text-right tabular">{formatNumber(p.qty)}</td>
+                    <td className="px-3 text-right tabular">
+                      {formatNumber(p.qty)}
+                      {(account.unsettled?.[p.symbol] ?? 0) > 0 && (
+                        <div className="text-[11px] text-ref" title="Cổ phiếu mua gần đây chưa về tài khoản (T+2)">
+                          {formatNumber(account.unsettled![p.symbol])} chờ về
+                        </div>
+                      )}
+                    </td>
                     <td className="px-3 text-right tabular">{formatPrice(p.avgCost)}</td>
                     <td className="px-3 text-right font-semibold tabular">{formatPrice(p.price)}</td>
                     <td className="px-3 text-right tabular">{formatVND(p.value)}</td>
@@ -158,13 +168,14 @@ export function PortfolioPage() {
                     {formatDateTime(o.createdAt)}
                     {o.status === 'filled' && ` · Khớp ${formatPrice(o.fillPrice ?? 0)} · Phí ${formatVND(o.fee + o.tax)}`}
                   </div>
+                  {o.note && <div className="mt-1 truncate text-xs italic text-ink/70">“{o.note}”</div>}
                 </div>
                 {o.status === 'pending' ? (
-                  <button onClick={() => cancelOrder(o.id)} className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold hover:border-down hover:text-down">
+                  <button onClick={() => void cancelOrder(o.id)} className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold hover:border-down hover:text-down">
                     Hủy
                   </button>
                 ) : (
-                  <span className={`text-xs font-semibold ${o.status === 'filled' ? 'text-up' : 'text-muted'}`}>{o.status === 'filled' ? 'Đã khớp' : 'Đã hủy'}</span>
+                  <span className={`text-xs font-semibold ${o.status === 'filled' ? 'text-up' : 'text-muted'}`}>{STATUS_LABEL[o.status]}</span>
                 )}
               </div>
             ))}
@@ -174,13 +185,43 @@ export function PortfolioPage() {
           <span className="text-muted">
             Tổng phí & thuế đã trả: <strong className="text-ink tabular">{formatVND(totalFees)}</strong>
           </span>
-          <AskButton question="Phí giao dịch tính thế nào?" onAsk={ask} />
+          <div className="flex gap-2">
+            <AskButton question="Nhìn lại các giao dịch gần đây của tôi" onAsk={ask} label="Mầm nhìn lại giao dịch" />
+            <AskButton question="Phí giao dịch tính thế nào?" onAsk={ask} />
+          </div>
         </div>
       </Card>
 
+      {(account.dividends?.length ?? 0) > 0 && (
+        <Card className="p-5">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-bold">Cổ tức</h2>
+            <AskButton question="Ngày GDKHQ là gì?" onAsk={ask} label="Cổ tức hoạt động thế nào?" />
+          </div>
+          <div className="divide-y divide-line text-sm">
+            {account.dividends!.map((d) => (
+              <div key={`${d.symbol}-${d.kind}-${d.exDate}`} className="flex items-center gap-3 py-2.5">
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold">
+                    {d.symbol} · {d.kind === 'cash_dividend' ? 'Cổ tức tiền mặt' : 'Cổ tức cổ phiếu'}
+                  </div>
+                  <div className="text-xs text-muted">
+                    GDKHQ {d.exDate} · Thanh toán {d.payDate} · {formatNumber(d.qty)} cp
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-semibold tabular text-up">{d.kind === 'cash_dividend' ? `+${formatVND(d.cash)}` : `+${formatNumber(d.shares)} cp`}</div>
+                  <div className="text-xs text-muted">{d.paid ? 'Đã nhận' : 'Chờ thanh toán'}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
       <div className="text-center">
         <button
-          onClick={() => window.confirm('Đặt lại tài khoản về 100.000.000 ₫ tiền ảo? Toàn bộ cổ phiếu và lịch sử lệnh sẽ bị xóa.') && resetAccount()}
+          onClick={() => window.confirm('Đặt lại tài khoản về 100.000.000 ₫ tiền ảo? Toàn bộ cổ phiếu và lịch sử lệnh sẽ bị xóa.') && void resetAccount()}
           className="text-sm font-semibold text-muted hover:text-down"
         >
           Đặt lại tài khoản tiền ảo

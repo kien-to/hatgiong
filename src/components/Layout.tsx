@@ -29,19 +29,16 @@ function NavIcon({ d }: { d: string }) {
   )
 }
 
-function MarketTicker() {
-  const quotes = useMarket((s) => s.quotes)
-  const list = Object.values(quotes)
-  if (list.length === 0) return null
-  const up = list.filter((q) => q.price > q.ref).length
-  const down = list.filter((q) => q.price < q.ref).length
-  const flat = list.length - up - down
+function SessionBadge() {
+  const status = useMarket((s) => s.status)
+  if (status.alwaysOpen) return null
   return (
-    <div className="hidden items-center gap-3 text-xs font-medium xl:flex">
-      <span className="text-up">▲ {up}</span>
-      <span className="text-ref">■ {flat}</span>
-      <span className="text-down">▼ {down}</span>
-    </div>
+    <span
+      className={`hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold md:inline-flex ${status.canTrade ? 'bg-brand-500/10 text-brand-500' : 'bg-canvas text-muted'}`}
+      title="Giờ khớp lệnh: 9:15–11:30 và 13:00–14:30, thứ Hai–thứ Sáu"
+    >
+      🕘 {status.label}
+    </span>
   )
 }
 
@@ -118,8 +115,8 @@ export function Layout({ children }: { children?: ReactNode }) {
               </NavLink>
             ))}
           </nav>
-          <MarketTicker />
           <div className="ml-auto flex items-center gap-2 lg:ml-0">
+            <SessionBadge />
             <SourceBadge />
             <span className="rounded-full bg-ref/15 px-2.5 py-1 text-xs font-semibold text-ref">Tiền ảo</span>
             <AccountMenu />

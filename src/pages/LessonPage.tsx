@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CompoundCalculator } from '@/components/CompoundCalculator'
+import { QuizQuestionCard } from '@/components/QuizQuestionCard'
 import { AskButton, Card } from '@/components/ui'
 import { LESSONS, LESSON_BY_ID } from '@/content/lessons'
 import { useAskTutor } from '@/hooks/useTutorContext'
@@ -75,37 +76,16 @@ export function LessonPage() {
         <h2 className="mb-3 text-lg font-bold">Kiểm tra nhanh</h2>
         <div className="space-y-4">
           {lesson.quiz.map((q, qi) => (
-            <Card key={q.id} className="p-5">
-              <div className="font-semibold">
-                {qi + 1}. {q.question}
-              </div>
-              <div className="mt-3 space-y-2">
-                {q.options.map((opt, oi) => {
-                  const picked = answers[q.id] === oi
-                  const correct = submitted && oi === q.answer
-                  const wrong = submitted && picked && oi !== q.answer
-                  return (
-                    <button
-                      key={oi}
-                      disabled={submitted}
-                      onClick={() => setAnswers({ ...answers, [q.id]: oi })}
-                      className={`w-full rounded-xl border px-4 py-2.5 text-left text-sm transition ${
-                        correct ? 'border-up bg-up/10 font-semibold text-up' : wrong ? 'border-down bg-down/10 text-down' : picked ? 'border-brand-500 bg-brand-500/5' : 'border-line hover:border-muted'
-                      }`}
-                    >
-                      {opt}
-                    </button>
-                  )
-                })}
-              </div>
-              {submitted && (
-                <div className={`mt-3 rounded-xl p-3 text-sm ${answers[q.id] === q.answer ? 'bg-up/5' : 'bg-ref/10'}`}>
-                  <strong>{answers[q.id] === q.answer ? 'Chính xác! ' : 'Chưa đúng. '}</strong>
-                  {q.explain}
-                  {answers[q.id] !== q.answer && <AskButton className="ml-1 mt-2" question={lesson.askPrompt} onAsk={ask} label="Hỏi Mầm thêm" />}
-                </div>
-              )}
-            </Card>
+            <QuizQuestionCard
+              key={q.id}
+              index={qi}
+              question={q}
+              picked={answers[q.id]}
+              submitted={submitted}
+              onPick={(oi) => setAnswers({ ...answers, [q.id]: oi })}
+              askPrompt={lesson.askPrompt}
+              onAsk={ask}
+            />
           ))}
         </div>
 

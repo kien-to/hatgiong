@@ -16,7 +16,11 @@ const TOPIC_QUESTION: Record<LessonTopic, string> = {
   tick: 'Bước giá là gì?',
   'buying-power': 'Sức mua là gì?',
   holdings: 'Đánh giá danh mục của tôi',
+  session: 'Giờ giao dịch là gì?',
+  settlement: 'Thanh toán T+2 là gì?',
 }
+
+const REASON_STARTERS = ['Tôi hiểu công ty này kiếm tiền thế nào', 'Giá đang giảm, tôi muốn mua rẻ', 'Muốn đa dạng danh mục', 'Thử nghiệm để học hỏi', 'Chốt lời / cắt lỗ theo kế hoạch']
 
 function Stepper({ value, onChange, step, min = 0, suffix }: { value: number; onChange: (v: number) => void; step: number; min?: number; suffix?: string }) {
   return (
@@ -43,6 +47,7 @@ export function TradeTicket({ stock, quote, initialSide = 'buy' }: { stock: Stoc
   const place = useUser((s) => s.placeOrder)
   const quotes = useMarket((s) => s.quotes)
   const source = useMarket((s) => s.source)
+  const status = useMarket((s) => s.status)
   const toast = useUI((s) => s.toast)
   const ask = useAskTutor()
 
@@ -52,17 +57,23 @@ export function TradeTicket({ stock, quote, initialSide = 'buy' }: { stock: Stoc
   const [limitPrice, setLimitPrice] = useState(quote.price)
   const [reviewing, setReviewing] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [note, setNote] = useState('')
 
   useEffect(() => {
     setLimitPrice(quote.price)
     setReviewing(false)
+    setNote('')
   }, [stock.symbol])
 
   useEffect(() => {
     setSide(initialSide)
   }, [initialSide])
 
-  const req = { symbol: stock.symbol, side, type, qty, limitPrice: type === 'limit' ? limitPrice : undefined }
+  useEffect(() => {
+    if (!status.canTrade) setType('limit')
+  }, [status.canTrade])
+
+  const req = { symbol: stock.symbol, side, type, qty, limitPrice: type === 'limit' ? limitPrice : undefined, note: note.trim() || undefined }
   const estimate = estimateOrder(req, quote.price)
   const error = validateOrder(account, req, stock, quote)
   const power = buyingPower(account)
@@ -116,8 +127,30 @@ export function TradeTicket({ stock, quote, initialSide = 'buy' }: { stock: Stoc
           Bạn sẽ <strong>{side === 'buy' ? 'mua' : 'bán'} {formatNumber(qty)} cổ phiếu {stock.symbol}</strong>{' '}
           {type === 'market'
             ? `ngay lập tức theo giá thị trường (khoảng ${formatPrice(quote.price)} ₫).`
-            : `với giá ${side === 'buy' ? 'tối đa' : 'tối thiểu'} ${formatPrice(limitPrice)} ₫. Nếu giá chưa đạt, lệnh sẽ chờ.`}
+            : `với giá ${side === 'buy' ? 'tối đa' : 'tối thiểu'} ${formatPrice(limitPrice)} ₫. Nếu giá chưa đạt, lệnh sẽ chờ${status.alwaysOpen ? '' : ' đến hết phiên hôm nay (15:00)'}.`}
+          {!status.canTrade && ' Thị trường đang không khớp lệnh, nên lệnh sẽ được xử lý ở phiên tiếp theo.'}
         </p>
+        <div className="mt-4">
+          <label className="text-sm font-semibold" htmlFor="order-note">
+            Vì sao bạn đặt lệnh này? <span className="font-normal text-muted">(không bắt buộc)</span>
+          </label>
+          <textarea
+            id="order-note"
+            value={note}
+            maxLength={500}
+            rows={2}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Ghi lại lý do giúp bạn nhìn lại và rút kinh nghiệm sau này"
+            className="mt-1.5 w-full resize-none rounded-xl border border-line px-3 py-2 text-sm outline-none focus:border-brand-500"
+          />
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {REASON_STARTERS.map((r) => (
+              <button key={r} type="button" onClick={() => setNote(r)} className="rounded-full bg-canvas px-2.5 py-1 text-xs text-muted hover:text-ink">
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
         <dl className="mt-4 space-y-2 text-sm">
           <Row label="Giá trị lệnh" value={formatVND(estimate.value)} />
           <Row label={`Phí môi giới (${formatDecimal(BROKER_FEE_RATE * 100)}%)`} value={formatVND(estimate.fee)} />
@@ -160,16 +193,22 @@ export function TradeTicket({ stock, quote, initialSide = 'buy' }: { stock: Stoc
         <span className="text-sm font-semibold">Loại lệnh</span>
         <Segmented
           value={type}
-          onChange={setType}
+          onChange={(t) => (t === 'market' && !status.canTrade ? undefined : setType(t))}
           options={[
             { value: 'limit', label: 'Giới hạn (LO)' },
-            { value: 'market', label: 'Thị trường' },
+            { value: 'market', label: status.canTrade ? 'Thị trường' : 'Thị trường 🔒' },
           ]}
         />
       </div>
       <div className="mt-1 text-right">
         <AskButton question={type === 'limit' ? 'Lệnh giới hạn là gì?' : 'Lệnh thị trường là gì?'} onAsk={ask} label="Khác nhau thế nào?" />
       </div>
+      {!status.canTrade && (
+        <div className="mt-3 rounded-xl bg-ref/10 p-3 text-xs leading-relaxed text-ink">
+          <strong>{status.label}.</strong> Lệnh thị trường tạm khóa. Bạn vẫn đặt được lệnh LO — lệnh sẽ chờ phiên khớp lệnh tiếp theo và hết hạn lúc 15:00 nếu chưa khớp.
+          <AskButton className="ml-1 mt-1" question="Giờ giao dịch là gì?" onAsk={ask} label="Giờ giao dịch" />
+        </div>
+      )}
 
       {type === 'limit' && (
         <div className="mt-3">
@@ -226,7 +265,10 @@ export function TradeTicket({ stock, quote, initialSide = 'buy' }: { stock: Stoc
       <dl className="mt-5 space-y-2 border-t border-line pt-4 text-sm">
         <Row label="Giá trị ước tính" value={formatVND(estimate.value)} />
         <Row label="Phí + thuế" value={formatVND(estimate.fee + estimate.tax)} />
-        <Row label={side === 'buy' ? 'Sức mua' : 'Có thể bán'} value={side === 'buy' ? formatVND(power) : `${formatNumber(available)} cp`} muted />
+        <Row label={side === 'buy' ? 'Sức mua' : 'Có thể bán'} value={side === 'buy' ? formatVND(power) : `${formatNumber(Math.max(available, 0))} cp`} muted />
+        {side === 'sell' && (account.unsettled?.[stock.symbol] ?? 0) > 0 && (
+          <Row label="Chờ về (T+2)" value={`${formatNumber(account.unsettled?.[stock.symbol] ?? 0)} cp`} muted />
+        )}
       </dl>
 
       {error && qty > 0 && (

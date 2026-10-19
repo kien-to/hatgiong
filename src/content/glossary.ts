@@ -96,7 +96,21 @@ export const GLOSSARY: GlossaryEntry[] = [
     term: 'Thanh toán T+2',
     aliases: ['t+2', 't2', 'thanh toán', 'cổ phiếu về', 'khi nào bán được'],
     short: 'Cổ phiếu mua hôm nay khoảng 2 ngày làm việc sau mới về tài khoản.',
-    body: 'Ở Việt Nam, cổ phiếu mua ngày T sẽ về tài khoản vào chiều ngày T+2 và lúc đó bạn mới bán được. Điều này nghĩa là bạn không thể "lướt sóng" mua sáng bán chiều như ở Mỹ. Phiên bản hiện tại của ứng dụng chưa mô phỏng thời gian chờ này để bạn dễ tập luyện.',
+    body: 'Ở Việt Nam, cổ phiếu mua ngày T sẽ về tài khoản vào chiều ngày T+2 (tính theo ngày giao dịch, bỏ qua cuối tuần) và lúc đó bạn mới bán được. Ví dụ mua thứ Năm thì từ 13:00 thứ Hai mới bán được. Điều này nghĩa là bạn không thể "lướt sóng" mua sáng bán chiều như ở Mỹ. Ứng dụng mô phỏng đúng quy tắc này; tiền bán cổ phiếu thì dùng được ngay.',
+  },
+  {
+    id: 'gio-giao-dich',
+    term: 'Giờ giao dịch',
+    aliases: ['giờ giao dịch', 'phiên', 'ato', 'atc', 'mở cửa', 'đóng cửa', 'nghỉ trưa', 'khi nào khớp', 'lệnh hết hạn', 'hết hiệu lực'],
+    short: 'Thị trường chỉ khớp lệnh vào giờ hành chính các ngày trong tuần.',
+    body: 'Từ thứ Hai đến thứ Sáu: phiên mở cửa ATO 9:00–9:15, khớp lệnh liên tục 9:15–11:30, nghỉ trưa 11:30–13:00, khớp liên tục 13:00–14:30, phiên đóng cửa ATC 14:30–14:45. Ngoài giờ khớp liên tục, bạn vẫn đặt được lệnh giới hạn (LO) và lệnh sẽ chờ đến phiên tiếp theo. Lệnh LO chỉ có hiệu lực trong ngày: nếu đến 15:00 chưa khớp, lệnh hết hạn và tiền tạm giữ được trả lại.',
+  },
+  {
+    id: 'gdkhq',
+    term: 'Ngày giao dịch không hưởng quyền (GDKHQ)',
+    aliases: ['gdkhq', 'không hưởng quyền', 'ngày chốt quyền', 'ex-date', 'chia cổ tức', 'nhận cổ tức'],
+    short: 'Muốn nhận cổ tức, bạn phải sở hữu cổ phiếu trước ngày GDKHQ.',
+    body: 'Nếu bạn mua cổ phiếu vào hoặc sau ngày GDKHQ, bạn không nhận được đợt cổ tức đó. Vào ngày GDKHQ, giá tham chiếu thường được điều chỉnh giảm tương ứng với cổ tức, nên "mua để ăn cổ tức" không tự tạo ra lợi nhuận. Cổ tức tiền mặt được trả vào ngày thanh toán, đã trừ 5% thuế thu nhập cá nhân.',
   },
   {
     id: 'buoc-gia',

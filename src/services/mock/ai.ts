@@ -166,6 +166,30 @@ function shouldIBuy(ctx: TutorContext, symbol?: string): string {
   return lines.join('\n')
 }
 
+function tradeReview(ctx: TutorContext): string {
+  if (ctx.recentTrades.length === 0) {
+    return 'Bạn chưa có giao dịch nào để nhìn lại. Khi đặt lệnh, hãy ghi một câu “Vì sao bạn đặt lệnh này?” — đó là nguyên liệu tốt nhất để học từ chính quyết định của mình.'
+  }
+  const withReason = ctx.recentTrades.filter((t) => t.reason)
+  const lines = ['**Nhìn lại giao dịch gần đây**', '']
+  for (const t of ctx.recentTrades.slice(0, 5)) {
+    const move = t.changeSincePct !== undefined ? ` · giá đã ${formatPct(t.changeSincePct)} từ lúc đó` : ''
+    lines.push(`- ${t.side === 'buy' ? 'Mua' : 'Bán'} ${t.qty} ${t.symbol} ở ${formatPrice(t.price)} ₫${move}${t.reason ? ` — _“${t.reason}”_` : ''}`)
+  }
+  lines.push('')
+  if (withReason.length < ctx.recentTrades.length) {
+    lines.push(`Bạn ghi lý do cho ${withReason.length}/${ctx.recentTrades.length} lệnh. Thử ghi lý do cho mọi lệnh — sau vài tuần bạn sẽ thấy rõ thói quen của mình.`)
+  }
+  lines.push(
+    '',
+    'Ba câu hỏi để tự đánh giá (quan trọng là **quá trình**, không phải lãi hay lỗ):',
+    '1. Lý do mua là về **doanh nghiệp**, về **giá vừa tăng/giảm**, hay về **cảm giác**?',
+    '2. Nếu biết trước kết quả, bạn có vẫn đặt lệnh với lý do đó không?',
+    '3. Lệnh này chiếm bao nhiêu % danh mục — có hợp lý với mức rủi ro bạn chấp nhận?',
+  )
+  return lines.join('\n')
+}
+
 function lossCoaching(ctx: TutorContext): string {
   const losers = ctx.positions.filter((p) => p.pnlPct < 0).sort((a, b) => a.pnlPct - b.pnlPct)
   return [
@@ -216,6 +240,7 @@ export function composeReply(message: string, ctx: TutorContext): string {
   if (has(text, 'có nên', 'nên mua', 'nên bán', 'mua gì', 'mua mã nào', 'tư vấn', 'khuyên', 'khuyến nghị', 'mua không', 'bán không')) return shouldIBuy(ctx, symbol)
   if (has(text, 'đánh giá danh mục', 'danh mục của tôi', 'danh mục của mình', 'portfolio', 'kiểm tra danh mục')) return reviewPortfolio(ctx)
   if (has(text, 'bắt đầu', 'người mới', 'đầu tiên', 'hướng dẫn', 'làm gì tiếp')) return gettingStarted(ctx)
+  if (has(text, 'nhìn lại', 'giao dịch của tôi', 'giao dịch gần đây', 'rút kinh nghiệm')) return tradeReview(ctx)
   if (has(text, 'đang lỗ', 'bị lỗ', 'giảm mạnh', 'thua lỗ', 'hoảng loạn', 'cắt lỗ', 'đang đỏ')) return lossCoaching(ctx)
   const entry = findGlossary(text)
   if (symbol && (!entry || has(text, 'công ty', 'là gì', 'giới thiệu', 'giải thích', 'thế nào'))) return explainStock(symbol, ctx)
@@ -243,7 +268,7 @@ export class MockAIService implements AIService {
     }
     if (ctx.page === 'learn') return ['Lãi kép là gì?', 'Drawdown là gì?', 'Quỹ ETF là gì?']
     if (ctx.positions.length === 0) return ['Mình nên bắt đầu từ đâu?', 'Cổ phiếu là gì?', 'Lô giao dịch là gì?']
-    return ['Đánh giá danh mục của tôi', 'Đa dạng hóa là gì?', 'Phí giao dịch tính thế nào?', 'Cổ phiếu giảm mạnh thì làm gì?']
+    return ['Đánh giá danh mục của tôi', 'Nhìn lại các giao dịch gần đây của tôi', 'Đa dạng hóa là gì?', 'Cổ phiếu giảm mạnh thì làm gì?']
   }
 
   insights(ctx: TutorContext): Insight[] {

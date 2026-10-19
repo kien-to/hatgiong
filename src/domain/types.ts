@@ -43,7 +43,7 @@ export type Range = '1D' | '1W' | '1M' | '3M' | '1Y'
 
 export type Side = 'buy' | 'sell'
 export type OrderType = 'market' | 'limit'
-export type OrderStatus = 'filled' | 'pending' | 'cancelled'
+export type OrderStatus = 'filled' | 'pending' | 'cancelled' | 'expired'
 
 export interface OrderRequest {
   symbol: string
@@ -51,9 +51,11 @@ export interface OrderRequest {
   type: OrderType
   qty: number
   limitPrice?: number
+  note?: string
 }
 
-export interface Order extends OrderRequest {
+export interface Order extends Omit<OrderRequest, 'note'> {
+  note?: string | null
   id: string
   status: OrderStatus
   fillPrice?: number
@@ -74,13 +76,44 @@ export interface EquityPoint {
   v: number
 }
 
+export interface DividendPayout {
+  symbol: string
+  kind: 'cash_dividend' | 'stock_dividend'
+  exDate: string
+  payDate: string
+  qty: number
+  cash: number
+  tax: number
+  shares: number
+  paid: boolean
+}
+
 export interface Account {
   startingCash: number
   cash: number
   realizedPnl: number
   positions: Record<string, Position>
+  unsettled?: Record<string, number>
   orders: Order[]
   equityHistory: EquityPoint[]
+  dividends?: DividendPayout[]
+}
+
+export interface QuizAttempt {
+  lessonId: string
+  score: number
+  total: number
+  answers: Record<string, number>
+  createdAt: number
+}
+
+export type MarketSession = 'ato' | 'continuous' | 'lunch' | 'atc' | 'closing' | 'pre' | 'closed' | 'weekend'
+
+export interface MarketStatus {
+  session: MarketSession
+  label: string
+  canTrade: boolean
+  alwaysOpen?: boolean
 }
 
 export type ExperienceLevel = 'newbie' | 'some' | 'experienced'

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { LineChart } from '@/components/charts'
 import { AskButton, Card } from '@/components/ui'
+import { learningStats } from '@/domain/review'
 import { GLOSSARY } from '@/content/glossary'
 import { LESSONS, SKILL_LABEL, type Skill } from '@/content/lessons'
 import { normalize } from '@/lib/text'
@@ -18,8 +20,19 @@ export function skillScores(results: Record<string, QuizResult>): Record<Skill, 
   return out
 }
 
+function Metric({ label, value, accent = false }: { label: string; value: number | null; accent?: boolean }) {
+  return (
+    <div>
+      <div className="text-xs text-muted">{label}</div>
+      <div className={`mt-1 text-2xl font-extrabold tabular ${accent ? 'text-accent-600' : ''}`}>{value === null ? '—' : `${Math.round(value)}%`}</div>
+    </div>
+  )
+}
+
 export function LearnPage() {
   const results = useUser((s) => s.quizResults)
+  const attempts = useUser((s) => s.quizAttempts)
+  const stats = useMemo(() => learningStats(attempts, Date.now()), [attempts])
   const ask = useAskTutor()
   const [query, setQuery] = useState('')
   const scores = skillScores(results)
@@ -51,6 +64,49 @@ export function LearnPage() {
           Đã hoàn thành <strong>{done}</strong>/{LESSONS.length} bài học
         </div>
       </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="p-5 md:col-span-2">
+          <h2 className="font-bold">Tiến bộ của bạn</h2>
+          <p className="text-xs text-muted">So sánh lần làm đầu tiên với điểm cao nhất của mỗi bài — đây là phần bạn đã thực sự học được.</p>
+          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+            <Metric label="Lần đầu" value={stats.firstTryPct} />
+            <Metric label="Tốt nhất" value={stats.bestPct} accent />
+            <div>
+              <div className="text-xs text-muted">Câu đã thuộc</div>
+              <div className="mt-1 text-2xl font-extrabold tabular">
+                {stats.mastered}
+                <span className="text-sm font-semibold text-muted">/{stats.cards}</span>
+              </div>
+            </div>
+          </div>
+          {stats.timeline.length >= 2 && (
+            <div className="mt-4">
+              <LineChart data={stats.timeline.map((p) => p.pct)} color="var(--color-accent-600)" height={90} />
+              <div className="mt-1 text-right text-[11px] text-muted">Điểm qua {stats.timeline.length} lần làm bài và ôn tập</div>
+            </div>
+          )}
+        </Card>
+        <Link to="/learn/review" className="group flex flex-col justify-between rounded-2xl border border-line bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md">
+          <div>
+            <div className="text-2xl">🔁</div>
+            <div className="mt-2 font-bold group-hover:text-brand-500">Ôn tập</div>
+            <p className="text-xs text-muted">Lặp lại ngắt quãng giúp bạn nhớ lâu hơn.</p>
+          </div>
+          <div className="mt-3 text-sm font-semibold">
+            {stats.due > 0 ? <span className="text-accent-600">{stats.due} câu đến hạn ›</span> : <span className="text-muted">Không có câu đến hạn</span>}
+          </div>
+        </Link>
+      </div>
+
+      <Link to="/classes" className="flex items-center gap-4 rounded-2xl border border-line bg-white p-4 transition hover:shadow-md">
+        <div className="text-2xl">🏫</div>
+        <div className="min-w-0 flex-1">
+          <div className="font-semibold">Lớp học</div>
+          <div className="text-xs text-muted">Tham gia lớp của trường, câu lạc bộ — hoặc tạo lớp để hướng dẫn người khác.</div>
+        </div>
+        <span className="text-muted">›</span>
+      </Link>
 
       <section>
         <h2 className="mb-3 text-lg font-bold">Lộ trình cho người mới</h2>

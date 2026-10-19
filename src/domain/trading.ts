@@ -1,7 +1,7 @@
 import { LOT_SIZE, isOnTick, orderFee, sellTax } from './market'
 import type { Account, Order, OrderRequest, Position, Quote, Stock } from './types'
 
-export type LessonTopic = 'lot' | 'price-band' | 'tick' | 'buying-power' | 'holdings' | 'quantity'
+export type LessonTopic = 'lot' | 'price-band' | 'tick' | 'buying-power' | 'holdings' | 'quantity' | 'session' | 'settlement'
 
 export interface OrderError {
   message: string
@@ -47,7 +47,7 @@ export function availableToSell(account: Account, symbol: string): number {
   const pending = account.orders
     .filter((o) => o.status === 'pending' && o.side === 'sell' && o.symbol === symbol)
     .reduce((sum, o) => sum + o.qty, 0)
-  return held - pending
+  return held - (account.unsettled?.[symbol] ?? 0) - pending
 }
 
 export function estimateOrder(req: Pick<OrderRequest, 'side' | 'type' | 'qty' | 'limitPrice'>, marketPrice: number): OrderEstimate {
@@ -85,7 +85,14 @@ export function validateOrder(account: Account, req: OrderRequest, stock: Stock,
       return { message: 'Sức mua không đủ cho lệnh này (đã tính cả phí giao dịch).', topic: 'buying-power' }
     }
   } else if (req.qty > available) {
-    return { message: `Bạn chỉ có ${available} cổ phiếu ${req.symbol} có thể bán.`, topic: 'holdings' }
+    const unsettled = account.unsettled?.[req.symbol] ?? 0
+    if (unsettled > 0) {
+      return {
+        message: `${unsettled} cổ phiếu ${req.symbol} bạn mua gần đây chưa về tài khoản (T+2). Bạn đang bán được ${Math.max(available, 0)} cổ.`,
+        topic: 'settlement',
+      }
+    }
+    return { message: `Bạn chỉ có ${Math.max(available, 0)} cổ phiếu ${req.symbol} có thể bán.`, topic: 'holdings' }
   }
   return null
 }

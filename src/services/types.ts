@@ -1,5 +1,5 @@
 import type { PlaceResult } from '@/domain/trading'
-import type { Account, Candle, Exchange, ExperienceLevel, Order, OrderRequest, Profile, Quote, QuizResult, Range, SessionUser, Stock } from '@/domain/types'
+import type { Account, Candle, Exchange, ExperienceLevel, Order, OrderRequest, Profile, Quote, QuizAttempt, QuizResult, Range, SessionUser, Stock } from '@/domain/types'
 
 export interface UserSnapshot {
   user: SessionUser | null
@@ -8,6 +8,7 @@ export interface UserSnapshot {
   account: Account
   watchlist: string[]
   quizResults: Record<string, QuizResult>
+  quizAttempts: QuizAttempt[]
 }
 
 export interface AccountService {
@@ -54,6 +55,7 @@ export interface TutorContext {
   startingCash: number
   positions: TutorPosition[]
   filledOrders: number
+  recentTrades: { symbol: string; side: 'buy' | 'sell'; qty: number; price: number; reason?: string; daysAgo: number; changeSincePct?: number }[]
   stock?: {
     symbol: string
     name: string

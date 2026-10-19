@@ -47,6 +47,11 @@ export function MarketPage() {
       })
   }, [stocks, quotes, exchange, sector, query, sort])
 
+  const breadth = useMemo(() => {
+    const up = rows.filter((r) => r.quote.price > r.quote.ref).length
+    const down = rows.filter((r) => r.quote.price < r.quote.ref).length
+    return { up, down, flat: rows.length - up - down }
+  }, [rows])
   const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
   const visible = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
@@ -97,7 +102,12 @@ export function MarketPage() {
         <Legend className="bg-ref" label="Tham chiếu" />
         <Legend className="bg-down" label="Giảm" />
         <Legend className="bg-floor" label="Sàn" />
-        <span className="ml-auto">{rows.length.toLocaleString('vi-VN')} mã</span>
+        <span className="ml-auto flex gap-3 font-semibold tabular">
+          <span className="text-up">▲ {breadth.up}</span>
+          <span className="text-ref">■ {breadth.flat}</span>
+          <span className="text-down">▼ {breadth.down}</span>
+          <span className="font-normal text-muted">· {rows.length.toLocaleString('vi-VN')} mã</span>
+        </span>
       </div>
 
       <Card className="overflow-hidden">

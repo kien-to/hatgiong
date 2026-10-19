@@ -211,10 +211,12 @@ token_verifications = 30
 web3 = 30
 
 # Configure one of the supported captcha providers: `hcaptcha`, `turnstile`.
+# Turn on together with VITE_TURNSTILE_SITE_KEY in .env.local. Cloudflare's always-pass test
+# pair: site key 1x00000000000000000000AA, secret 1x0000000000000000000000000000000AA.
 # [auth.captcha]
 # enabled = true
-# provider = "hcaptcha"
-# secret = ""
+# provider = "turnstile"
+# secret = "env(SUPABASE_AUTH_CAPTCHA_SECRET)"
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.

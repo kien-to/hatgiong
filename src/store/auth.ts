@@ -1,6 +1,7 @@
 import type { AuthError, User } from '@supabase/supabase-js'
 import { create } from 'zustand'
 import type { SessionUser } from '@/domain/types'
+import { captchaToken } from '@/lib/captcha'
 import { supabase } from '@/lib/supabase'
 import { useUser } from './user'
 
@@ -32,6 +33,17 @@ function toSessionUser(u: User): SessionUser {
 }
 
 const redirectTo = () => window.location.origin + window.location.pathname
+
+async function signInAsGuest(): Promise<boolean> {
+  if (!supabase) return false
+  try {
+    const captcha = await captchaToken()
+    const { error } = await supabase.auth.signInAnonymously({ options: { captchaToken: captcha } })
+    return !error
+  } catch {
+    return false
+  }
+}
 
 interface AuthState {
   status: 'loading' | 'ready' | 'offline' | 'error'
@@ -71,19 +83,18 @@ export const useAuth = create<AuthState>()((set, get) => ({
       if (user && changed) setTimeout(() => void useUser.getState().load(), 0)
     })
     const { data } = await supabase.auth.getSession()
-    if (!data.session) {
-      const { error } = await supabase.auth.signInAnonymously()
-      if (error) {
-        set({ status: 'error' })
-        return
-      }
+    if (!data.session && !(await signInAsGuest())) {
+      set({ status: 'error' })
+      return
     }
     set({ status: 'ready' })
   },
 
   signIn: async (email, password) => {
     if (!supabase) return null
-    return message((await supabase.auth.signInWithPassword({ email, password })).error)
+    const captcha = await captchaToken().catch(() => null)
+    if (captcha === null) return 'Không xác minh được bạn không phải robot. Tải lại trang và thử lại.'
+    return message((await supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captcha } })).error)
   },
 
   upgradeWithEmail: async (email) => {
@@ -125,6 +136,6 @@ export const useAuth = create<AuthState>()((set, get) => ({
     if (!supabase) return
     await supabase.auth.signOut()
     localStorage.removeItem(PENDING_PASSWORD_KEY)
-    await supabase.auth.signInAnonymously()
+    if (!(await signInAsGuest())) set({ status: 'error' })
   },
 }))

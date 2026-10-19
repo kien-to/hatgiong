@@ -1,4 +1,5 @@
 import { STARTING_CASH } from '@/domain/market'
+import { REVIEW_LESSON_ID } from '@/domain/review'
 import { cancelOrder, createAccount, placeOrder, processPendingOrders, totalEquity, type PlaceResult } from '@/domain/trading'
 import type { Account, OrderRequest, Profile, Quote, QuizResult, Stock } from '@/domain/types'
 import type { AccountService, UserSnapshot } from '../types'
@@ -16,6 +17,7 @@ function fresh(): Stored {
     account: createAccount(STARTING_CASH, Date.now()),
     watchlist: ['VNM', 'FPT', 'VCB', 'HPG', 'MWG'],
     quizResults: {},
+    quizAttempts: [],
   }
 }
 
@@ -75,9 +77,15 @@ export class LocalAccountService implements AccountService {
     return this.state.watchlist
   }
 
-  async recordQuiz(lessonId: string, score: number, total: number): Promise<void> {
+  async recordQuiz(lessonId: string, score: number, total: number, answers: Record<string, number>): Promise<void> {
+    const quizAttempts = [...this.state.quizAttempts, { lessonId, score, total, answers, createdAt: Date.now() }]
+    if (lessonId === REVIEW_LESSON_ID) {
+      this.save({ quizAttempts })
+      return
+    }
     const prev: QuizResult | undefined = this.state.quizResults[lessonId]
     this.save({
+      quizAttempts,
       quizResults: {
         ...this.state.quizResults,
         [lessonId]: { score: Math.max(score, prev?.score ?? 0), total, attempts: (prev?.attempts ?? 0) + 1, completedAt: Date.now() },

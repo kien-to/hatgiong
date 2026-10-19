@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import { STARTING_CASH } from '@/domain/market'
 import { createAccount, type PlaceResult } from '@/domain/trading'
-import type { Account, Order, OrderRequest, Profile, Quote, QuizResult, SessionUser, Stock } from '@/domain/types'
+import { REVIEW_LESSON_ID } from '@/domain/review'
+import type { Account, Order, OrderRequest, Profile, Quote, QuizAttempt, QuizResult, SessionUser, Stock } from '@/domain/types'
 import { accounts } from '@/services'
 
 interface UserState {
@@ -13,6 +14,7 @@ interface UserState {
   account: Account
   watchlist: string[]
   quizResults: Record<string, QuizResult>
+  quizAttempts: QuizAttempt[]
   load: () => Promise<void>
   completeOnboarding: (profile: Profile) => Promise<void>
   placeOrder: (req: OrderRequest, stock: Stock, quote: Quote) => Promise<PlaceResult>
@@ -34,6 +36,7 @@ export const useUser = create<UserState>()((set, get) => ({
   account: createAccount(STARTING_CASH, Date.now()),
   watchlist: [],
   quizResults: {},
+  quizAttempts: [],
 
   load: async () => {
     try {
@@ -70,13 +73,20 @@ export const useUser = create<UserState>()((set, get) => ({
   },
 
   recordQuiz: async (lessonId, score, total, answers) => {
-    const prev = get().quizResults[lessonId]
-    set({
-      quizResults: {
-        ...get().quizResults,
-        [lessonId]: { score: Math.max(score, prev?.score ?? 0), total, attempts: (prev?.attempts ?? 0) + 1, completedAt: Date.now() },
-      },
-    })
+    const now = Date.now()
+    const quizAttempts = [...get().quizAttempts, { lessonId, score, total, answers, createdAt: now }]
+    if (lessonId === REVIEW_LESSON_ID) {
+      set({ quizAttempts })
+    } else {
+      const prev = get().quizResults[lessonId]
+      set({
+        quizAttempts,
+        quizResults: {
+          ...get().quizResults,
+          [lessonId]: { score: Math.max(score, prev?.score ?? 0), total, attempts: (prev?.attempts ?? 0) + 1, completedAt: now },
+        },
+      })
+    }
     await accounts.recordQuiz(lessonId, score, total, answers)
   },
 
