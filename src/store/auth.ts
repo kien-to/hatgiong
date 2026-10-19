@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import type { SessionUser } from '@/domain/types'
 import { captchaToken } from '@/lib/captcha'
 import { supabase } from '@/lib/supabase'
+import { backendAccounts } from '@/services'
 import { useUser } from './user'
 
 const PENDING_PASSWORD_KEY = 'hatgiong:pending-password'
@@ -69,7 +70,7 @@ export const useAuth = create<AuthState>()((set, get) => ({
   init: async () => {
     if (initialised) return
     initialised = true
-    if (!supabase) {
+    if (!supabase || !backendAccounts) {
       set({ status: 'offline' })
       await useUser.getState().load()
       return

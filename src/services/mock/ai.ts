@@ -1,7 +1,7 @@
 import { GLOSSARY, type GlossaryEntry } from '@/content/glossary'
 import { SEED_BY_SYMBOL, SEED_STOCKS } from '@/content/stocks'
 import { formatCompactVND, formatDecimal, formatPct, formatPrice } from '@/domain/format'
-import { priceBandPct } from '@/domain/market'
+import { priceBandPercent } from '@/domain/market'
 import { lookupStock as getStock } from '@/lib/stockRegistry'
 import { normalize } from '@/lib/text'
 import type { AIService, ChatMessage, Insight, TutorContext } from '../types'
@@ -125,7 +125,7 @@ function explainStock(symbol: string, ctx: TutorContext): string {
   const avgPe = pe !== undefined && peerPes.length ? peerPes.reduce((s, x) => s + x, 0) / peerPes.length : undefined
   const lines = [`**${stock.symbol} – ${stock.name}**`]
   if (profile?.description) lines.push(profile.description)
-  lines.push('', `- Ngành: ${stock.sector} · Sàn ${stock.exchange} (biên độ ±${priceBandPct(stock.exchange) * 100}%)`)
+  lines.push('', `- Ngành: ${stock.sector} · Sàn ${stock.exchange} (biên độ ±${priceBandPercent(stock.exchange)}%)`)
   if (profile?.marketCapTrillion) lines.push(`- Vốn hóa khoảng ${profile.marketCapTrillion} nghìn tỷ ₫ (ước tính)`)
   if (pe !== undefined) {
     lines.push(`- P/E khoảng ${formatDecimal(pe)}${avgPe ? ` (trung bình nhóm cùng ngành trong app: ${formatDecimal(avgPe)})` : ''}`)
@@ -212,7 +212,7 @@ function glossaryAnswer(entry: GlossaryEntry, ctx: TutorContext): string {
   const lines = [`**${entry.term}**`, entry.short, '', entry.body]
   if (entry.id === 'tran-san' && ctx.stock) {
     const s = ctx.stock
-    lines.push('', `Ví dụ với ${s.symbol} hôm nay: tham chiếu ${formatPrice(s.ref)} ₫, sàn ${s.exchange} có biên độ ±${priceBandPct(s.exchange) * 100}%.`)
+    lines.push('', `Ví dụ với ${s.symbol} hôm nay: tham chiếu ${formatPrice(s.ref)} ₫, sàn ${s.exchange} có biên độ ±${priceBandPercent(s.exchange)}%.`)
   }
   if (entry.id === 'pe' && ctx.stock?.approxPe) {
     lines.push('', `${ctx.stock.symbol} có P/E khoảng ${formatDecimal(ctx.stock.approxPe)} (ước tính).`)

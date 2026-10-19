@@ -5,7 +5,7 @@ import { TradeTicket } from '@/components/TradeTicket'
 import { AskButton, Card, ChangePill, PnlText, Segmented, SparkleIcon, StockLogo, ZONE_TEXT, quoteZone } from '@/components/ui'
 import { useCatalog, useStock } from '@/store/catalog'
 import { formatCompactVND, formatDate, formatDateTime, formatDecimal, formatNumber, formatPct, formatPrice, formatSignedVND, formatVND } from '@/domain/format'
-import { priceBandPct } from '@/domain/market'
+import { priceBandPercent } from '@/domain/market'
 import type { Range, Side } from '@/domain/types'
 import { useHistory } from '@/hooks/useHistory'
 import { useAskTutor } from '@/hooks/useTutorContext'
@@ -58,7 +58,7 @@ export function StockPage() {
   const deltaPct = baseline ? (delta / baseline) * 100 : 0
   const lineColor = (closes[closes.length - 1] ?? 0) >= (baseline ?? 0) ? 'var(--color-up)' : 'var(--color-down)'
   const watched = watchlist.includes(stock.symbol)
-  const band = priceBandPct(stock.exchange) * 100
+  const band = priceBandPercent(stock.exchange)
   const estimated = !stock.profile?.source
 
   const marketValue = position ? position.qty * quote.price : 0

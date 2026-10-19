@@ -11,6 +11,10 @@ export function priceBandPct(exchange: Exchange): number {
   return PRICE_BAND[exchange]
 }
 
+export function priceBandPercent(exchange: Exchange): number {
+  return Math.round(PRICE_BAND[exchange] * 100)
+}
+
 export function tickSize(price: number, exchange: Exchange): number {
   if (exchange !== 'HOSE') return 100
   if (price < 10_000) return 10

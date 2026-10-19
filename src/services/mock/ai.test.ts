@@ -22,7 +22,9 @@ describe('mock tutor', () => {
   })
 
   it('explains a company by ticker', () => {
-    expect(composeReply('fpt là công ty gì?', base)).toContain('FPT – Công ty CP FPT')
+    const reply = composeReply('fpt là công ty gì?', base)
+    expect(reply).toContain('FPT – Công ty CP FPT')
+    expect(reply).toContain('biên độ ±7%)')
   })
 
   it('never gives a buy recommendation', () => {
