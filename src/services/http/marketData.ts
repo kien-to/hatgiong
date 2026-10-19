@@ -1,5 +1,5 @@
 import { STOCK_PROFILES } from '@/content/stocks'
-import type { Candle, Quote, Range, Stock } from '@/domain/types'
+import type { Candle, Quote, Range, Stock, StockProfile } from '@/domain/types'
 import { API_BASE, wsUrl } from '@/lib/api'
 import type { MarketDataService } from '../types'
 
@@ -26,8 +26,17 @@ export class HttpMarketDataService implements MarketDataService {
   constructor(private readonly baseUrl = API_BASE) {}
 
   async listStocks(): Promise<Stock[]> {
-    const stocks = await getJSON<Stock[]>(`${this.baseUrl}/stocks`)
-    return stocks.map((s) => (STOCK_PROFILES[s.symbol] ? { ...s, profile: STOCK_PROFILES[s.symbol] } : s))
+    const [stocks, fundamentals] = await Promise.all([
+      getJSON<Stock[]>(`${this.baseUrl}/stocks`),
+      getJSON<(StockProfile & { symbol: string })[]>(`${this.baseUrl}/fundamentals`).catch(() => []),
+    ])
+    const loaded = new Map(fundamentals.map(({ symbol, ...profile }) => [symbol, profile]))
+    return stocks.map((s) => {
+      const curated = STOCK_PROFILES[s.symbol]
+      const fresh = loaded.get(s.symbol)
+      if (!curated && !fresh) return s
+      return { ...s, profile: { ...curated, ...fresh, description: fresh?.description ?? curated?.description } }
+    })
   }
 
   async getQuotes(): Promise<Quote[]> {

@@ -2,11 +2,11 @@ import asyncio
 import contextlib
 import logging
 import re
-from contextlib import asynccontextmanager
-from typing import Literal
-
+import time
 import uuid
+from contextlib import asynccontextmanager
 from datetime import timedelta
+from typing import Literal
 
 from fastapi import Depends, FastAPI, HTTPException, Query, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
@@ -98,6 +98,20 @@ async def board_ws(ws: WebSocket):
 @app.get("/api/stocks")
 async def stocks():
     return await vietcap.listing()
+
+
+_fundamentals_cache: tuple[float, list[dict]] | None = None
+FUNDAMENTALS_TTL_S = 600
+
+
+@app.get("/api/fundamentals")
+async def fundamentals():
+    global _fundamentals_cache
+    if _fundamentals_cache and time.monotonic() - _fundamentals_cache[0] < FUNDAMENTALS_TTL_S:
+        return _fundamentals_cache[1]
+    rows = await db.fundamentals()
+    _fundamentals_cache = (time.monotonic(), rows)
+    return rows
 
 
 @app.get("/api/board")

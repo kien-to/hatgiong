@@ -478,6 +478,24 @@ async def process_dividends(today) -> int:
     return handled
 
 
+async def fundamentals() -> list[dict]:
+    rows = await pool().fetch("select * from public.stock_fundamentals")
+    return [
+        {
+            "symbol": r["symbol"],
+            "pe": _num(r["pe"]),
+            "pb": _num(r["pb"]),
+            "eps": _num(r["eps"]),
+            "roe": _num(r["roe"]),
+            "dividendYield": _num(r["dividend_yield"]),
+            "description": r["description"],
+            "source": r["source"],
+            "asOf": r["as_of"].isoformat(),
+        }
+        for r in rows
+    ]
+
+
 # --- tutor usage ---
 
 

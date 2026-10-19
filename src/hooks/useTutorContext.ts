@@ -68,8 +68,8 @@ export function useTutorContext(): TutorContext {
               ceiling: quote.ceiling,
               floor: quote.floor,
               changePct: changePct(quote),
-              approxPe: stock.profile?.pe,
-              approxDividendYield: stock.profile?.dividendYield,
+              approxPe: stock.profile?.pe ?? undefined,
+              approxDividendYield: stock.profile?.dividendYield ?? undefined,
             }
           : undefined,
     }

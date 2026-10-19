@@ -59,6 +59,7 @@ export function StockPage() {
   const lineColor = (closes[closes.length - 1] ?? 0) >= (baseline ?? 0) ? 'var(--color-up)' : 'var(--color-down)'
   const watched = watchlist.includes(stock.symbol)
   const band = priceBandPct(stock.exchange) * 100
+  const estimated = !stock.profile?.source
 
   const marketValue = position ? position.qty * quote.price : 0
   const pnl = position ? marketValue - position.qty * position.avgCost : 0
@@ -186,21 +187,30 @@ export function StockPage() {
               value={
                 quote.listedShares
                   ? formatCompactVND(quote.price * quote.listedShares)
-                  : stock.profile
+                  : stock.profile?.marketCapTrillion
                     ? `~${formatNumber(stock.profile.marketCapTrillion)} nghìn tỷ`
                     : '—'
               }
               onClick={() => ask('Vốn hóa là gì?')}
             />
-            <Stat label="P/E (ước tính)" value={stock.profile ? `~${formatDecimal(stock.profile.pe)}` : '—'} onClick={() => ask('P/E là gì?')} />
+            <Stat label={estimated ? 'P/E (ước tính)' : 'P/E'} value={stock.profile?.pe ? `${estimated ? '~' : ''}${formatDecimal(stock.profile.pe)}` : '—'} onClick={() => ask('P/E là gì?')} />
             <Stat
-              label="Cổ tức (ước tính)"
-              value={stock.profile?.dividendYield ? `~${formatDecimal(stock.profile.dividendYield)}%` : '—'}
+              label={estimated ? 'Cổ tức (ước tính)' : 'Tỷ suất cổ tức'}
+              value={stock.profile?.dividendYield ? `${estimated ? '~' : ''}${formatDecimal(stock.profile.dividendYield)}%` : '—'}
               onClick={() => ask('Cổ tức là gì?')}
             />
             <Stat label="Ngành" value={stock.sector} />
             <Stat label="Lô tối thiểu" value={formatCompactVND(quote.price * 100)} onClick={() => ask('Lô giao dịch là gì?')} />
+            {stock.profile?.pb ? <Stat label="P/B" value={formatDecimal(stock.profile.pb)} /> : null}
+            {stock.profile?.roe ? <Stat label="ROE" value={`${formatDecimal(stock.profile.roe)}%`} /> : null}
+            {stock.profile?.eps ? <Stat label="EPS" value={`${formatNumber(stock.profile.eps)} ₫`} /> : null}
           </div>
+          {stock.profile?.source && (
+            <p className="mt-3 text-[11px] text-muted">
+              Nguồn chỉ số: {stock.profile.source}
+              {stock.profile.asOf ? `, cập nhật ${formatDate(new Date(stock.profile.asOf).getTime())}` : ''}
+            </p>
+          )}
           <div className="mt-5 border-t border-line pt-4">
             <h3 className="text-sm font-semibold">Về {stock.symbol}</h3>
             <p className="mt-1 text-sm leading-relaxed text-muted">

@@ -120,17 +120,20 @@ function explainStock(symbol: string, ctx: TutorContext): string {
   const profile = stock.profile
   const seed = SEED_BY_SYMBOL[symbol]
   const peers = SEED_STOCKS.filter((s) => s.sector === seed?.sector && s.symbol !== symbol)
-  const avgPe = profile && peers.length ? peers.reduce((s, p) => s + p.profile.pe, 0) / peers.length : undefined
+  const pe = profile?.pe ?? undefined
+  const peerPes = peers.map((p) => p.profile.pe).filter((x): x is number => typeof x === 'number')
+  const avgPe = pe !== undefined && peerPes.length ? peerPes.reduce((s, x) => s + x, 0) / peerPes.length : undefined
   const lines = [`**${stock.symbol} – ${stock.name}**`]
-  if (profile) lines.push(profile.description)
+  if (profile?.description) lines.push(profile.description)
   lines.push('', `- Ngành: ${stock.sector} · Sàn ${stock.exchange} (biên độ ±${priceBandPct(stock.exchange) * 100}%)`)
-  if (profile) {
-    lines.push(
-      `- Vốn hóa khoảng ${profile.marketCapTrillion} nghìn tỷ ₫ (ước tính)`,
-      `- P/E khoảng ${formatDecimal(profile.pe)}${avgPe ? ` (trung bình nhóm cùng ngành trong app: ${formatDecimal(avgPe)})` : ''}`,
-      `- Tỷ suất cổ tức: ${profile.dividendYield ? `khoảng ${formatDecimal(profile.dividendYield)}%/năm` : 'gần đây không trả cổ tức tiền mặt đáng kể'}`,
-    )
+  if (profile?.marketCapTrillion) lines.push(`- Vốn hóa khoảng ${profile.marketCapTrillion} nghìn tỷ ₫ (ước tính)`)
+  if (pe !== undefined) {
+    lines.push(`- P/E khoảng ${formatDecimal(pe)}${avgPe ? ` (trung bình nhóm cùng ngành trong app: ${formatDecimal(avgPe)})` : ''}`)
   }
+  if (profile && profile.dividendYield !== undefined) {
+    lines.push(`- Tỷ suất cổ tức: ${profile.dividendYield ? `khoảng ${formatDecimal(profile.dividendYield)}%/năm` : 'gần đây không trả cổ tức tiền mặt đáng kể'}`)
+  }
+  if (profile?.source) lines.push(`- _Nguồn số liệu: ${profile.source}${profile.asOf ? `, ${profile.asOf}` : ''}_`)
   if (live) {
     lines.push(`- Giá hiện tại: ${formatPrice(live.price)} ₫ (${formatPct(live.changePct)} hôm nay)`)
   }
@@ -138,9 +141,9 @@ function explainStock(symbol: string, ctx: TutorContext): string {
   const lotPrice = live?.price ?? seed?.basePrice
   if (lotPrice) lines.push('', `💡 Lô tối thiểu 100 cổ phiếu ≈ ${formatCompactVND(lotPrice * 100)}.`)
   if (!profile) lines.push('', `Mình chưa có hồ sơ chi tiết về ${symbol}. Hãy xem báo cáo thường niên trên trang quan hệ nhà đầu tư của công ty để hiểu họ kiếm tiền từ đâu.`)
-  if (profile && avgPe && profile.pe > avgPe * 1.4) {
+  if (pe !== undefined && avgPe && pe > avgPe * 1.4) {
     lines.push('', `P/E của ${symbol} cao hơn khá nhiều so với các công ty cùng ngành — thị trường đang kỳ vọng tăng trưởng lớn, và kỳ vọng cao cũng đi kèm rủi ro thất vọng.`)
-  } else if (profile && avgPe && profile.pe < avgPe * 0.75) {
+  } else if (pe !== undefined && avgPe && pe < avgPe * 0.75) {
     lines.push('', `P/E của ${symbol} thấp hơn nhóm cùng ngành. Đôi khi đó là cơ hội, đôi khi thị trường đang lo ngại điều gì đó — hãy tìm hiểu lý do.`)
   }
   return lines.join('\n')
@@ -154,7 +157,7 @@ function shouldIBuy(ctx: TutorContext, symbol?: string): string {
     'Mình không thể nói bạn nên mua hay bán — không ai dự đoán chắc chắn được giá. Nhưng mình có thể giúp bạn **tự ra quyết định tốt hơn**. Trước khi đặt lệnh, hãy trả lời 5 câu hỏi:',
     '',
     `1. **Hiểu doanh nghiệp:** Bạn có giải thích được ${target ? `${target.symbol} kiếm tiền từ đâu` : 'công ty này kiếm tiền từ đâu'} trong 2 câu không?`,
-    `2. **Định giá:** ${target?.profile ? `P/E khoảng ${formatDecimal(target.profile.pe)} là cao hay thấp so với các công ty ${target.sector.toLowerCase()} khác?` : 'P/E là cao hay thấp so với các công ty cùng ngành?'}`,
+    `2. **Định giá:** ${target?.profile?.pe ? `P/E khoảng ${formatDecimal(target.profile.pe)} là cao hay thấp so với các công ty ${target.sector.toLowerCase()} khác?` : 'P/E là cao hay thấp so với các công ty cùng ngành?'}`,
     '3. **Tỷ trọng:** Sau khi mua, cổ phiếu này chiếm bao nhiêu % danh mục? (gợi ý: ≤ 20–25%)',
     '4. **Kịch bản xấu:** Nếu giá giảm 20% ngay tuần sau, bạn sẽ làm gì?',
     '5. **Thời gian:** Bạn định giữ bao lâu? Vài ngày, vài tháng hay vài năm?',

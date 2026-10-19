@@ -1,11 +1,12 @@
-"""Vietnamese trading calendar: sessions, T+2 settlement and day-order expiry.
+"""Vietnamese trading calendar: sessions, exchange holidays, T+2 settlement and day-order expiry.
 
-Public holidays are not modelled; on those days the price feed is static, so nothing fills.
 Set MARKET_HOURS=always to trade around the clock in development.
 """
 
 import os
 from datetime import date, datetime, time, timedelta, timezone
+
+from .holidays import HOLIDAYS
 
 VN_TZ = timezone(timedelta(hours=7))
 ALWAYS_OPEN = os.environ.get("MARKET_HOURS", "").lower() == "always"
@@ -32,6 +33,7 @@ LABELS = {
     "pre": "Chưa mở cửa",
     "closed": "Đã đóng cửa",
     "weekend": "Nghỉ cuối tuần",
+    "holiday": "Nghỉ lễ",
 }
 
 
@@ -40,13 +42,15 @@ def now_vn() -> datetime:
 
 
 def is_trading_day(d: date) -> bool:
-    return d.weekday() < 5
+    return d.weekday() < 5 and d not in HOLIDAYS
 
 
 def session_at(t: datetime) -> str:
     if ALWAYS_OPEN:
         return "continuous"
     local = t.astimezone(VN_TZ)
+    if local.date() in HOLIDAYS:
+        return "holiday"
     if not is_trading_day(local.date()):
         return "weekend"
     clock = local.time()

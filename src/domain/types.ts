@@ -1,10 +1,15 @@
 export type Exchange = 'HOSE' | 'HNX' | 'UPCOM'
 
 export interface StockProfile {
-  description: string
-  pe: number
-  dividendYield: number
-  marketCapTrillion: number
+  description?: string | null
+  pe?: number | null
+  pb?: number | null
+  eps?: number | null
+  roe?: number | null
+  dividendYield?: number | null
+  marketCapTrillion?: number
+  source?: string
+  asOf?: string
 }
 
 export interface Stock {
@@ -107,7 +112,7 @@ export interface QuizAttempt {
   createdAt: number
 }
 
-export type MarketSession = 'ato' | 'continuous' | 'lunch' | 'atc' | 'closing' | 'pre' | 'closed' | 'weekend'
+export type MarketSession = 'ato' | 'continuous' | 'lunch' | 'atc' | 'closing' | 'pre' | 'closed' | 'weekend' | 'holiday'
 
 export interface MarketStatus {
   session: MarketSession

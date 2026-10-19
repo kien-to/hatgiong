@@ -17,6 +17,15 @@ def test_sessions():
     assert session_at(vn(2026, 10, 18, 10, 0)) == "weekend"
 
 
+def test_holidays_close_the_market():
+    assert session_at(vn(2026, 2, 18, 10)) == "holiday"
+    assert session_at(vn(2026, 1, 2, 10)) == "holiday"
+
+
+def test_t_plus_two_skips_tet():
+    assert settles_at(vn(2026, 2, 12, 10)).date() == vn(2026, 2, 23, 0).date()
+
+
 def test_t_plus_two_skips_weekend():
     thursday = vn(2026, 10, 15, 10)
     assert settles_at(thursday) == vn(2026, 10, 19, 13)
