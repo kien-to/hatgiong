@@ -34,7 +34,7 @@ function SessionBadge() {
   if (status.alwaysOpen) return null
   return (
     <span
-      className={`hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold md:inline-flex ${status.canTrade ? 'bg-brand-500/10 text-brand-500' : 'bg-canvas text-muted'}`}
+      className={`hidden items-center gap-1.5 rounded-full px-2.5 py-1 whitespace-nowrap text-xs font-semibold xl:inline-flex ${status.canTrade ? 'bg-brand-500/10 text-brand-500' : 'bg-canvas text-muted'}`}
       title="Giờ khớp lệnh: 9:15–11:30 và 13:00–14:30, thứ Hai–thứ Sáu"
     >
       🕘 {status.label}
@@ -45,14 +45,9 @@ function SessionBadge() {
 function SourceBadge() {
   const source = useMarket((s) => s.source)
   const ready = useMarket((s) => s.ready)
-  if (!ready) return null
-  return source === 'live' ? (
-    <span className="hidden items-center gap-1.5 rounded-full bg-up/10 px-2.5 py-1 text-xs font-semibold text-up sm:inline-flex" title="Giá thật từ Vietcap, cập nhật mỗi 10 giây">
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-up" />
-      Giá thật
-    </span>
-  ) : (
-    <span className="hidden rounded-full bg-canvas px-2.5 py-1 text-xs font-semibold text-muted sm:inline-flex" title="Không kết nối được máy chủ dữ liệu, đang dùng giá mô phỏng">
+  if (!ready || source === 'live') return null
+  return (
+    <span className="hidden rounded-full bg-canvas px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-muted xl:inline-flex" title="Không kết nối được máy chủ dữ liệu, đang dùng giá mô phỏng">
       Giá mô phỏng
     </span>
   )
@@ -102,14 +97,14 @@ export function Layout({ children }: { children?: ReactNode }) {
           <NavLink to="/">
             <Logo />
           </NavLink>
-          <SearchBox className="hidden max-w-sm flex-1 md:block" />
+          <SearchBox className="hidden min-w-40 max-w-sm flex-1 md:block" />
           <nav className="ml-auto hidden items-center gap-1 lg:flex">
             {NAV.map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
                 end={n.to === '/'}
-                className={({ isActive }) => `rounded-lg px-3 py-2 text-sm font-semibold transition ${isActive ? 'text-brand' : 'text-muted hover:text-ink'}`}
+                className={({ isActive }) => `whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition ${isActive ? 'text-brand' : 'text-muted hover:text-ink'}`}
               >
                 {n.label}
               </NavLink>
@@ -117,13 +112,11 @@ export function Layout({ children }: { children?: ReactNode }) {
           </nav>
           <div className="ml-auto flex items-center gap-2 lg:ml-0">
             <SessionBadge />
-            <SourceBadge />
-            <span className="hidden whitespace-nowrap rounded-full bg-ref/15 px-2.5 py-1 text-xs font-semibold text-ref sm:inline">Tiền ảo</span>
-            <AccountMenu />
+            <SourceBadge />            <AccountMenu />
           </div>
           <button
             onClick={() => setTutorOpen(!tutorOpen)}
-            className="hidden items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 lg:inline-flex"
+            className="hidden shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 lg:inline-flex"
           >
             <SparkleIcon className="h-4 w-4 text-accent" />
             Hỏi Mầm
