@@ -2,6 +2,19 @@
 
 Three pieces: Supabase (database and auth), the FastAPI backend (a container), and the static frontend. Fill in the keys as described in [CONFIGURATION.md](CONFIGURATION.md).
 
+## Recommended setup
+
+| Piece | Host | Address |
+| --- | --- | --- |
+| Database and auth | Supabase, region Southeast Asia (Singapore) | — |
+| Backend | Fly.io, region `sin`, config in `server/fly.toml` | `api.<your-domain>` |
+| Frontend | Cloudflare Workers (static assets), config in `wrangler.jsonc` | `<your-domain>` |
+| Sign-up email | Resend, as custom SMTP in Supabase | `no-reply@<your-domain>` |
+
+Supabase's built-in email sender allows only a few messages an hour, which is not enough for sign-ups; set up custom SMTP before inviting users.
+
+Deploy the backend with `fly deploy --ha=false` from `server/`. Without `--ha=false`, Fly starts two machines, and two copies of the order matcher could fill the same order twice.
+
 ## 1. Supabase
 
 ```bash
@@ -41,7 +54,9 @@ Supabase's session pooler (port 5432) and a direct connection both work. The tra
 VITE_SUPABASE_URL=... VITE_SUPABASE_PUBLISHABLE_KEY=... VITE_API_URL=https://<your-api-host> VITE_TURNSTILE_SITE_KEY=... npm run build
 ```
 
-Upload `dist/` to any static host. `public/_redirects` (Netlify, Cloudflare Pages) and `vercel.json` (Vercel) route every path to `index.html` so deep links work.
+Upload `dist/` to any static host. `wrangler.jsonc` (Cloudflare Workers) and `vercel.json` (Vercel) route every path to `index.html` so deep links work. On Cloudflare, connect the GitHub repo under Workers & Pages with build command `npm run build` and deploy command `npx wrangler deploy`.
+
+The Supabase URL and publishable key for production live in `.env.production`, which Vite reads during `npm run build`. Both values are public.
 
 The simplest setup is serving the frontend and the API from the same domain, with a reverse proxy sending `/api/*` (including WebSocket upgrades) to the backend. Then `VITE_API_URL` and `CORS_ORIGINS` can stay empty.
 
