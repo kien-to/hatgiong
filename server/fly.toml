@@ -8,6 +8,7 @@ primary_region = "sin"
   PORT = "8000"
   SUPABASE_URL = "https://lgnpvhtgmiwvhjkjepgd.supabase.co"
   SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vP1Lbe5v6Mk0sb5Wy8gCNg_sWK8TcrM"
+  CORS_ORIGINS = "https://hatgiong.org,https://www.hatgiong.org"
 
 [http_service]
   internal_port = 8000
