@@ -47,6 +47,33 @@ describe('mock tutor', () => {
     expect(new MockAIService().insights(ctx).map((i) => i.id)).toContain('concentration')
   })
 
+  it('does not repeat the concentration warning as a one-stock sector warning', () => {
+    const ctx: TutorContext = {
+      ...base,
+      cash: 20_000_000,
+      positions: [
+        { symbol: 'VVS', sector: 'Ô tô & Phụ tùng', weightPct: 61.68, pnlPct: 0 },
+        { symbol: 'FPT', sector: 'Công nghệ', weightPct: 38.32, pnlPct: 0 },
+      ],
+    }
+    const insights = new MockAIService().insights(ctx)
+    expect(insights.map((i) => i.id)).not.toContain('sector')
+    expect(insights[0].title).toBe('VVS chiếm 62% phần cổ phiếu của bạn')
+  })
+
+  it('warns about a sector when several stocks share it', () => {
+    const ctx: TutorContext = {
+      ...base,
+      cash: 20_000_000,
+      positions: [
+        { symbol: 'VCB', sector: 'Ngân hàng', weightPct: 35, pnlPct: 0 },
+        { symbol: 'TCB', sector: 'Ngân hàng', weightPct: 35, pnlPct: 0 },
+        { symbol: 'FPT', sector: 'Công nghệ', weightPct: 30, pnlPct: 0 },
+      ],
+    }
+    expect(new MockAIService().insights(ctx).find((i) => i.id === 'sector')?.title).toBe('70% phần cổ phiếu thuộc ngành Ngân hàng')
+  })
+
   it('does not mistake common words for keywords', () => {
     expect(composeReply('khoảng bao nhiêu tiền thì mua được FPT?', base)).not.toContain('Thấy danh mục đỏ')
   })

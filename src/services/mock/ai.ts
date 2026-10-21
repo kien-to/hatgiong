@@ -292,16 +292,19 @@ export class MockAIService implements AIService {
       out.push({
         id: 'concentration',
         tone: 'warning',
-        title: `${top.symbol} chiếm ${formatDecimal(top.weightPct)}% cổ phiếu của bạn`,
+        title: `${top.symbol} chiếm ${Math.round(top.weightPct)}% phần cổ phiếu của bạn`,
         body: 'Danh mục đang phụ thuộc nhiều vào một mã. Thử tìm hiểu cách đa dạng hóa.',
         ask: 'Đánh giá danh mục của tôi',
       })
     }
-    const sectors = new Map<string, number>()
-    for (const p of ctx.positions) sectors.set(p.sector, (sectors.get(p.sector) ?? 0) + p.weightPct)
-    const [sector, weight] = [...sectors.entries()].sort((a, b) => b[1] - a[1])[0]
-    if (sectors.size > 1 && weight > 60) {
-      out.push({ id: 'sector', tone: 'warning', title: `${formatDecimal(weight)}% danh mục thuộc ngành ${sector}`, body: 'Cổ phiếu cùng ngành thường lên xuống cùng nhau.', ask: 'Đa dạng hóa là gì?' })
+    const sectors = new Map<string, { weight: number; count: number }>()
+    for (const p of ctx.positions) {
+      const s = sectors.get(p.sector) ?? { weight: 0, count: 0 }
+      sectors.set(p.sector, { weight: s.weight + p.weightPct, count: s.count + 1 })
+    }
+    const [sector, { weight, count }] = [...sectors.entries()].sort((a, b) => b[1].weight - a[1].weight)[0]
+    if (sectors.size > 1 && count > 1 && weight > 60) {
+      out.push({ id: 'sector', tone: 'warning', title: `${Math.round(weight)}% phần cổ phiếu thuộc ngành ${sector}`, body: `${count} mã cùng ngành thường lên xuống cùng nhau.`, ask: 'Đa dạng hóa là gì?' })
     }
     const loser = ctx.positions.find((p) => p.pnlPct < -8)
     if (loser) {
