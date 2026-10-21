@@ -119,12 +119,16 @@ function inline(text: string): ReactNode[] {
 
 export function Markdown({ text }: { text: string }) {
   const blocks: ReactNode[] = []
-  let list: { ordered: boolean; items: string[] } | null = null
+  let list: { ordered: boolean; start: number; items: string[] } | null = null
   const flush = () => {
     if (!list) return
     const Tag = list.ordered ? 'ol' : 'ul'
     blocks.push(
-      <Tag key={blocks.length} className={`my-1 space-y-1 pl-5 ${list.ordered ? 'list-decimal' : 'list-disc'}`}>
+      <Tag
+        key={blocks.length}
+        start={list.ordered && list.start !== 1 ? list.start : undefined}
+        className={`my-1 space-y-1 pl-5 ${list.ordered ? 'list-decimal' : 'list-disc'}`}
+      >
         {list.items.map((item, i) => (
           <li key={i}>{inline(item)}</li>
         ))}
@@ -134,16 +138,16 @@ export function Markdown({ text }: { text: string }) {
   }
   for (const line of text.split('\n')) {
     const bullet = line.match(/^- (.*)/)
-    const numbered = line.match(/^\d+\. (.*)/)
+    const numbered = line.match(/^(\d+)\. (.*)/)
     if (bullet || numbered) {
       const ordered = Boolean(numbered)
       if (list && list.ordered !== ordered) flush()
-      if (!list) list = { ordered, items: [] }
-      list.items.push((bullet ?? numbered)![1])
+      if (!list) list = { ordered, start: numbered ? Number(numbered[1]) : 1, items: [] }
+      list.items.push(bullet ? bullet[1] : numbered![2])
       continue
     }
-    flush()
     if (line.trim() === '') continue
+    flush()
     blocks.push(
       <p key={blocks.length} className="my-1">
         {inline(line)}

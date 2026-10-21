@@ -12,6 +12,8 @@ const base: TutorContext = {
   positions: [],
   filledOrders: 0,
   recentTrades: [],
+  openOrders: [],
+  market: { session: 'continuous', label: 'Khớp lệnh liên tục', canTrade: true },
 }
 
 describe('mock tutor', () => {

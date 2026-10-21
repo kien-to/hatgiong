@@ -13,6 +13,7 @@ export function useTutorContext(): TutorContext {
   const account = useUser((s) => s.account)
   const profile = useUser((s) => s.profile)
   const quotes = useMarket((s) => s.quotes)
+  const status = useMarket((s) => s.status)
   const catalogReady = useCatalog((s) => s.ready)
 
   return useMemo(() => {
@@ -56,6 +57,19 @@ export function useTutorContext(): TutorContext {
             changeSincePct: now ? ((now - o.fillPrice!) / o.fillPrice!) * 100 : undefined,
           }
         }),
+      openOrders: account.orders
+        .filter((o) => o.status === 'pending')
+        .slice(0, 10)
+        .map((o) => ({
+          symbol: o.symbol,
+          side: o.side,
+          qty: o.qty,
+          limitPrice: o.limitPrice,
+          currentPrice: quotes[o.symbol]?.price,
+          reason: o.note ?? undefined,
+          minutesAgo: Math.floor((Date.now() - o.createdAt) / 60_000),
+        })),
+      market: { session: status.session, label: status.label, canTrade: status.canTrade },
       stock:
         stock && quote
           ? {
@@ -80,7 +94,7 @@ export function useTutorContext(): TutorContext {
             }
           : undefined,
     }
-  }, [pathname, account, profile, quotes, catalogReady])
+  }, [pathname, account, profile, quotes, status, catalogReady])
 }
 
 export function useAskTutor(): (question: string) => void {

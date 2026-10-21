@@ -56,6 +56,8 @@ export interface TutorContext {
   positions: TutorPosition[]
   filledOrders: number
   recentTrades: { symbol: string; side: 'buy' | 'sell'; qty: number; price: number; reason?: string; daysAgo: number; changeSincePct?: number }[]
+  openOrders: { symbol: string; side: 'buy' | 'sell'; qty: number; limitPrice?: number; currentPrice?: number; reason?: string; minutesAgo: number }[]
+  market: { session: string; label: string; canTrade: boolean }
   stock?: {
     symbol: string
     name: string
