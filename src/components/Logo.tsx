@@ -7,7 +7,7 @@ export function Logo({ light = false }: { light?: boolean }) {
         <path d="M16 15c0-4 3-7 8-7 0 4-3 7-8 7Z" fill="#00c805" />
         <path d="M16 18c0-3-2.4-5.5-6.5-5.5 0 3.2 2.4 5.5 6.5 5.5Z" fill="#7be07e" />
       </svg>
-      <span className={`text-lg font-extrabold tracking-tight ${light ? 'text-white' : 'text-brand'}`}>Hạt Giống</span>
+      <span className={`whitespace-nowrap text-lg font-extrabold tracking-tight ${light ? 'text-white' : 'text-brand'}`}>Hạt Giống</span>
     </div>
   )
 }

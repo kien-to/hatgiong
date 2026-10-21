@@ -98,7 +98,7 @@ export function Layout({ children }: { children?: ReactNode }) {
   return (
     <div className="min-h-full pb-24 lg:pb-10">
       <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 md:gap-6">
           <NavLink to="/">
             <Logo />
           </NavLink>
@@ -118,7 +118,7 @@ export function Layout({ children }: { children?: ReactNode }) {
           <div className="ml-auto flex items-center gap-2 lg:ml-0">
             <SessionBadge />
             <SourceBadge />
-            <span className="rounded-full bg-ref/15 px-2.5 py-1 text-xs font-semibold text-ref">Tiền ảo</span>
+            <span className="hidden whitespace-nowrap rounded-full bg-ref/15 px-2.5 py-1 text-xs font-semibold text-ref sm:inline">Tiền ảo</span>
             <AccountMenu />
           </div>
           <button

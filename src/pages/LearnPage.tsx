@@ -65,7 +65,7 @@ export function LearnPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card className="p-5 md:col-span-2">
           <h2 className="font-bold">Tiến bộ của bạn</h2>
           <p className="text-xs text-muted">So sánh lần làm đầu tiên với điểm cao nhất của mỗi bài — đây là phần bạn đã thực sự học được.</p>
@@ -110,7 +110,7 @@ export function LearnPage() {
 
       <section>
         <h2 className="mb-3 text-lg font-bold">Lộ trình cho người mới</h2>
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {LESSONS.map((l, i) => {
             const r = results[l.id]
             return (
@@ -146,7 +146,7 @@ export function LearnPage() {
             className="w-full max-w-xs rounded-xl border border-line bg-white px-3 py-2 text-sm outline-none focus:border-brand-500"
           />
         </div>
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {terms.map((g) => (
             <Card key={g.id} className="flex flex-col p-4">
               <div className="font-semibold">{g.term}</div>

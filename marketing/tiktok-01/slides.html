@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root { --navy: #0b1f3a; --navy2: #12305a; --green: #00c805; --leaf: #7be07e; --ink: #0b1f3a; --cream: #f6f4ee; --red: #ff5a5f; --muted: rgba(255,255,255,.68); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #222; font-family: 'Be Vietnam Pro', sans-serif; }
+  .slide { width: 1080px; height: 1920px; position: relative; overflow: hidden; padding: 150px 96px 140px; display: flex; flex-direction: column; color: #fff; background: radial-gradient(1200px 900px at 100% 0%, #1d4ed8 0%, transparent 55%), linear-gradient(160deg, var(--navy) 0%, var(--navy2) 100%); margin-bottom: 40px; }
+  .slide.light { background: var(--cream); color: var(--ink); --muted: rgba(11,31,58,.62); }
+  .brand { position: absolute; left: 96px; bottom: 90px; display: flex; align-items: center; gap: 18px; font-weight: 800; font-size: 38px; }
+  .brand svg { width: 64px; height: 64px; }
+  .page { position: absolute; right: 96px; bottom: 100px; font-size: 30px; font-weight: 700; color: var(--muted); }
+  .kicker { display: inline-block; align-self: flex-start; padding: 14px 30px; border-radius: 999px; background: rgba(0,200,5,.16); color: var(--leaf); font-weight: 800; font-size: 34px; letter-spacing: .02em; }
+  .light .kicker { background: rgba(0,200,5,.14); color: #078a0b; }
+  h1 { font-size: 112px; line-height: 1.06; font-weight: 900; letter-spacing: -.02em; margin-top: 44px; }
+  h2 { font-size: 88px; line-height: 1.1; font-weight: 900; letter-spacing: -.015em; margin-top: 40px; }
+  .hl { color: var(--green); }
+  .light .hl { color: #079a0c; }
+  .red { color: var(--red); }
+  p.lead { font-size: 46px; line-height: 1.45; color: var(--muted); margin-top: 44px; font-weight: 500; }
+  .note { font-size: 28px; line-height: 1.45; color: var(--muted); margin-top: auto; padding-bottom: 80px; }
+  .swipe { margin-top: auto; margin-bottom: 120px; font-size: 40px; font-weight: 800; color: var(--leaf); }
+  .bars { display: flex; align-items: flex-end; gap: 48px; height: 760px; margin-top: 70px; }
+  .bar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; }
+  .bar .stack { width: 100%; border-radius: 28px 28px 0 0; overflow: hidden; display: flex; flex-direction: column; }
+  .bar .gain { background: var(--green); }
+  .bar .put { background: rgba(255,255,255,.22); }
+  .bar .val { font-size: 54px; font-weight: 900; margin-bottom: 18px; }
+  .bar .yr { font-size: 36px; font-weight: 700; margin-top: 22px; color: var(--muted); }
+  .legend { display: flex; gap: 40px; margin-top: 36px; font-size: 32px; color: var(--muted); font-weight: 600; }
+  .legend i { display: inline-block; width: 30px; height: 30px; border-radius: 8px; vertical-align: -5px; margin-right: 12px; }
+  .card { background: #fff; color: var(--ink); border-radius: 40px; padding: 56px; margin-top: 60px; box-shadow: 0 30px 80px rgba(11,31,58,.12); }
+  .card .row { display: flex; justify-content: space-between; align-items: baseline; font-size: 44px; padding: 22px 0; border-bottom: 2px solid #edf0f4; }
+  .card .row:last-child { border-bottom: 0; }
+  .card .row b { font-weight: 900; }
+  .big { font-size: 190px; font-weight: 900; line-height: 1; letter-spacing: -.04em; margin-top: 50px; }
+  .phones { display: flex; gap: 40px; margin-top: 70px; justify-content: center; }
+  .phone { width: 420px; height: 908px; border-radius: 64px; border: 14px solid #050e1c; overflow: hidden; background: #fff; box-shadow: 0 40px 100px rgba(0,0,0,.45); }
+  .phone img { width: 100%; display: block; }
+  .phone.tilt-l { transform: rotate(-4deg) translateY(30px); }
+  .phone.tilt-r { transform: rotate(4deg) translateY(-10px); }
+  .pills { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 56px; }
+  .pill { padding: 22px 34px; border-radius: 999px; background: rgba(255,255,255,.1); font-size: 38px; font-weight: 700; }
+  .cta { margin-top: 70px; align-self: flex-start; padding: 34px 60px; border-radius: 999px; background: var(--green); color: var(--navy); font-weight: 900; font-size: 52px; }
+  .seed { position: absolute; right: -60px; top: 260px; width: 560px; opacity: .1; }
+</style>
+</head>
+<body>
+
+<!-- 1. Hook -->
+<section class="slide" id="s1">
+  <svg class="seed" viewBox="0 0 32 32"><path d="M16 26V14" stroke="#00c805" stroke-width="2.4" stroke-linecap="round"/><path d="M16 15c0-4 3-7 8-7 0 4-3 7-8 7Z" fill="#00c805"/><path d="M16 18c0-3-2.4-5.5-6.5-5.5 0 3.2 2.4 5.5 6.5 5.5Z" fill="#7be07e"/></svg>
+  <span class="kicker">ĐẦU TƯ CHO NGƯỜI MỚI</span>
+  <h1>Mỗi tháng<br />để dành <span class="hl">2 triệu</span>.<br />30 năm sau<br />bạn có bao nhiêu?</h1>
+  <p class="lead">Điều trường học không dạy bạn — và 3 sai lầm khiến người mới mất tiền.</p>
+  <div class="swipe">Vuốt để xem →</div>
+  <div class="brand"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="#ffffff1a"/><path d="M16 26V14" stroke="#00c805" stroke-width="2.4" stroke-linecap="round"/><path d="M16 15c0-4 3-7 8-7 0 4-3 7-8 7Z" fill="#00c805"/><path d="M16 18c0-3-2.4-5.5-6.5-5.5 0 3.2 2.4 5.5 6.5 5.5Z" fill="#7be07e"/></svg>Hạt Giống</div>
+  <div class="page">1/7</div>
+</section>
+
+<!-- 2. Compounding -->
+<section class="slide" id="s2">
+  <span class="kicker">LÃI KÉP</span>
+  <h2>Tiền đẻ ra tiền,<br />rồi tiền đó lại <span class="hl">đẻ tiếp</span>.</h2>
+  <div class="bars">
+    <div class="bar"><div class="val">366 tr</div><div class="stack" style="height: 12.3%"><div class="gain" style="flex: 126"></div><div class="put" style="flex: 240"></div></div><div class="yr">10 năm</div></div>
+    <div class="bar"><div class="val">1,18 tỷ</div><div class="stack" style="height: 39.6%"><div class="gain" style="flex: 698"></div><div class="put" style="flex: 480"></div></div><div class="yr">20 năm</div></div>
+    <div class="bar"><div class="val hl">2,98 tỷ</div><div class="stack" style="height: 100%"><div class="gain" style="flex: 2260"></div><div class="put" style="flex: 720"></div></div><div class="yr">30 năm</div></div>
+  </div>
+  <div class="legend"><span><i style="background: rgba(255,255,255,.22)"></i>Tiền bạn bỏ vào</span><span><i style="background: #00c805"></i>Lãi sinh ra</span></div>
+  <p class="note">Ví dụ: 2 triệu/tháng, giả định lợi nhuận trung bình 8%/năm. Chỉ là minh họa, không phải dự đoán hay cam kết. Thực tế có năm giảm 20–30%.</p>
+  <div class="page">2/7</div>
+</section>
+
+<!-- 3. Mistake 1 -->
+<section class="slide light" id="s3">
+  <span class="kicker">SAI LẦM #1</span>
+  <h2>Dồn hết tiền<br />vào <span class="red">1 mã</span>.</h2>
+  <p class="lead">Nếu 1 cổ phiếu chiếm 80% danh mục và nó giảm 30%, cả danh mục của bạn mất 24%.</p>
+  <div class="card">
+    <div class="row"><span>1 mã chiếm tối đa</span><b class="hl">20–25%</b></div>
+    <div class="row"><span>1 ngành chiếm tối đa</span><b class="hl">40%</b></div>
+    <div class="row"><span>Số ngành nên có</span><b class="hl">3+</b></div>
+  </div>
+  <p class="note">Gợi ý phổ biến cho người mới, không phải quy tắc tuyệt đối.</p>
+  <div class="page">3/7</div>
+</section>
+
+<!-- 4. Mistake 2 -->
+<section class="slide" id="s4">
+  <span class="kicker">SAI LẦM #2</span>
+  <h2>Mua bán<br /><span class="red">liên tục</span>.</h2>
+  <p class="lead">Ở Việt Nam, mỗi lần mua rồi bán mất khoảng:</p>
+  <div class="big hl">~0,4%</div>
+  <p class="lead" style="margin-top: 30px">0,15% phí mua + 0,15% phí bán + 0,1% thuế bán.<br /><br />Lướt sóng 50 lần một năm? Phí và thuế có thể ăn mất <b style="color:#fff">~20% vốn</b> — trước cả khi bạn lời đồng nào.</p>
+  <p class="note">Mức phí 0,15% là ví dụ phổ biến; mỗi công ty chứng khoán có biểu phí riêng.</p>
+  <div class="page">4/7</div>
+</section>
+
+<!-- 5. Mistake 3 -->
+<section class="slide light" id="s5">
+  <span class="kicker">SAI LẦM #3</span>
+  <h2>Hoảng loạn<br />bán khi <span class="red">giảm</span>.</h2>
+  <p class="lead">Thị trường đỏ là chuyện bình thường. Người mất tiền nhiều nhất thường là người bán ra đúng lúc sợ nhất.</p>
+  <div class="card">
+    <div class="row" style="font-size: 40px"><span>Trước khi mua, hãy tự hỏi:</span></div>
+    <div class="row" style="font-size: 40px; justify-content: flex-start"><span>“Nếu mã này giảm 20%, mình sẽ làm gì?”</span></div>
+    <div class="row" style="font-size: 40px; justify-content: flex-start"><span>Ghi lý do mua ra giấy. Giá giảm → đọc lại.</span></div>
+  </div>
+  <div class="page">5/7</div>
+</section>
+
+<!-- 6. App -->
+<section class="slide" id="s6">
+  <span class="kicker">TẬP TRƯỚC KHI DÙNG TIỀN THẬT</span>
+  <h2>100 triệu <span class="hl">tiền ảo</span>.<br />Giá cổ phiếu thật.</h2>
+  <div class="phones">
+    <div class="phone tilt-l"><img src="app-home.png" /></div>
+    <div class="phone tilt-r"><img src="app-mam.png" /></div>
+  </div>
+  <div class="pills"><span class="pill">🇻🇳 1.500+ mã HOSE, HNX, UPCoM</span><span class="pill">✨ Trợ lý AI Mầm giải thích mọi thứ</span></div>
+  <div class="page">6/7</div>
+</section>
+
+<!-- 7. CTA -->
+<section class="slide" id="s7">
+  <svg class="seed" viewBox="0 0 32 32" style="opacity:.14; top: 1080px"><path d="M16 26V14" stroke="#00c805" stroke-width="2.4" stroke-linecap="round"/><path d="M16 15c0-4 3-7 8-7 0 4-3 7-8 7Z" fill="#00c805"/><path d="M16 18c0-3-2.4-5.5-6.5-5.5 0 3.2 2.4 5.5 6.5 5.5Z" fill="#7be07e"/></svg>
+  <span class="kicker">HẠT GIỐNG</span>
+  <h1>Giàu không đến<br />sau một đêm.<br /><span class="hl">Nó được gieo.</span></h1>
+  <p class="lead">Học đầu tư bằng cách làm — không rủi ro, không mất tiền thật. Hoàn toàn miễn phí.</p>
+  <div class="cta">Link ở bio 🌱</div>
+  <p class="note">Hạt Giống là ứng dụng học tập với tiền ảo, không phải công ty chứng khoán và không đưa ra khuyến nghị đầu tư.</p>
+  <div class="brand"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="#ffffff1a"/><path d="M16 26V14" stroke="#00c805" stroke-width="2.4" stroke-linecap="round"/><path d="M16 15c0-4 3-7 8-7 0 4-3 7-8 7Z" fill="#00c805"/><path d="M16 18c0-3-2.4-5.5-6.5-5.5 0 3.2 2.4 5.5 6.5 5.5Z" fill="#7be07e"/></svg>Hạt Giống</div>
+  <div class="page">7/7</div>
+</section>
+
+</body>
+</html>

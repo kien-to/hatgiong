@@ -92,7 +92,7 @@ export function ClassesPage() {
 
       {error && <p className="text-sm text-down">{error}</p>}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card className="p-5">
           <h2 className="font-bold">Tham gia lớp</h2>
           <p className="mt-1 text-xs text-muted">

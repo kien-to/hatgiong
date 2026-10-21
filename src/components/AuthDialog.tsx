@@ -230,9 +230,9 @@ export function AccountMenu() {
     return (
       <button
         onClick={() => setMode('save')}
-        className="rounded-full border border-brand/15 bg-white px-3 py-1.5 text-xs font-semibold text-brand transition hover:border-brand-500 hover:text-brand-500"
+        className="whitespace-nowrap rounded-full border border-brand/15 bg-white px-3 py-1.5 text-xs font-semibold text-brand transition hover:border-brand-500 hover:text-brand-500"
       >
-        Khách · Lưu tiến trình
+        <span className="hidden sm:inline">Khách · </span>Lưu tiến trình
       </button>
     )
   }

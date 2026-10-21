@@ -136,7 +136,7 @@ function Movers() {
           ]}
         />
       </div>
-      <div className="grid gap-x-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-x-6 md:grid-cols-2">
         {sorted.slice(0, 6).map((q) => (
           <StockRow key={q.symbol} symbol={q.symbol} subtitle={getStock(q.symbol)?.sector} />
         ))}
@@ -195,8 +195,8 @@ export function HomePage() {
   const cash = account.cash
   const pending = account.orders.filter((o) => o.status === 'pending').length
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <div className="space-y-6 lg:col-span-2">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="min-w-0 space-y-6 lg:col-span-2">
         <Hero />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
           <Stat label="Tiền mặt" value={formatVND(cash)} />

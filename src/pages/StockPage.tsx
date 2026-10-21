@@ -70,8 +70,8 @@ export function StockPage() {
   const pnl = position ? marketValue - position.qty * position.avgCost : 0
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <div className="space-y-6 lg:col-span-2">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="min-w-0 space-y-6 lg:col-span-2">
         <div className="flex items-start gap-4">
           <Link to="/market" className="mt-2 rounded-lg p-1 text-muted hover:bg-white hover:text-ink" aria-label="Quay lại">
             ‹
