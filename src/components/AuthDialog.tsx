@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
 import { useUI, type AuthDialogMode } from '@/store/ui'
 import { useUser } from '@/store/user'
@@ -36,17 +37,21 @@ export function AuthDialog() {
   const mode = useUI((s) => s.authDialog)
   const setMode = useUI((s) => s.setAuthDialog)
   const user = useAuth((s) => s.user)
-  const { signIn, upgradeWithEmail, signInWithGoogle, linkGoogle } = useAuth()
+  const { signIn, upgradeWithEmail, confirmEmailCode, setPassword: savePassword, signInWithGoogle, linkGoogle } = useAuth()
   const hasProgress = useUser((s) => s.account.orders.length > 0 || Object.keys(s.quizResults).length > 0)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [sentTo, setSentTo] = useState<string | null>(null)
+  const [resent, setResent] = useState(false)
 
   useEffect(() => {
     setError(null)
     setSentTo(null)
+    setCode('')
+    setResent(false)
   }, [mode])
 
   if (!mode) return null
@@ -62,18 +67,33 @@ export function AuthDialog() {
     else onSuccess?.()
   }
 
+  const sendCode = (address: string) =>
+    run(async () => {
+      const result = await upgradeWithEmail(address)
+      if (result === 'sent') setSentTo(address)
+      else if (result === 'confirmed') {
+        const err = await savePassword(password)
+        if (err) return err
+        setMode(null)
+      } else return result
+      return null
+    })
+
   const submit = (e: FormEvent) => {
     e.preventDefault()
-    if (tab === 'save') {
-      const address = email.trim()
-      void run(async () => {
-        const result = await upgradeWithEmail(address)
-        if (result === 'sent') setSentTo(address)
-        else if (result === 'confirmed') setMode(null)
-        else return result
-        return null
-      })
-    } else void run(() => signIn(email.trim(), password), () => setMode(null))
+    if (tab === 'save') void sendCode(email.trim())
+    else void run(() => signIn(email.trim(), password), () => setMode(null))
+  }
+
+  const submitCode = (e: FormEvent) => {
+    e.preventDefault()
+    if (sentTo) void run(() => confirmEmailCode(sentTo, code.trim(), password), () => setMode(null))
+  }
+
+  const resend = () => {
+    if (!sentTo) return
+    setResent(false)
+    void sendCode(sentTo).then(() => setResent(true))
   }
 
   return (
@@ -104,18 +124,44 @@ export function AuthDialog() {
         )}
 
         {sentTo ? (
-          <div className="mt-5 rounded-2xl bg-up/5 p-4 text-sm leading-relaxed">
-            <div className="font-semibold">📬 Kiểm tra hộp thư {sentTo}</div>
-            <p className="mt-1 text-muted">Nhấn vào liên kết xác nhận trong email. Sau đó bạn sẽ quay lại đây để đặt mật khẩu — mọi tiến trình hiện tại được giữ nguyên.</p>
-            {isLocalSupabase && (
-              <p className="mt-2 text-xs text-muted">
-                Đang chạy local: email nằm ở{' '}
-                <a href={LOCAL_MAILBOX} target="_blank" rel="noreferrer" className="font-semibold text-brand-500 underline">
-                  {LOCAL_MAILBOX}
-                </a>
-              </p>
-            )}
-          </div>
+          <form onSubmit={submitCode} className="mt-5 space-y-3">
+            <div className="rounded-2xl bg-up/5 p-4 text-sm leading-relaxed">
+              <div className="font-semibold">📬 Kiểm tra hộp thư {sentTo}</div>
+              <p className="mt-1 text-muted">Nhập mã xác nhận trong email vào ô bên dưới. Mọi tiến trình hiện tại được giữ nguyên.</p>
+              {isLocalSupabase && (
+                <p className="mt-2 text-xs text-muted">
+                  Đang chạy local: email nằm ở{' '}
+                  <a href={LOCAL_MAILBOX} target="_blank" rel="noreferrer" className="font-semibold text-brand-500 underline">
+                    {LOCAL_MAILBOX}
+                  </a>
+                </p>
+              )}
+            </div>
+            <input
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6,10}"
+              maxLength={10}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+              placeholder="Mã xác nhận"
+              className="w-full rounded-xl border border-line px-3 py-3 text-center text-lg font-bold tracking-[0.3em] outline-none focus:border-brand-500"
+            />
+            {error && <p className="text-sm text-down">{error}</p>}
+            {resent && !error && <p className="text-sm text-up">Đã gửi mã mới.</p>}
+            <button disabled={busy} className="w-full rounded-xl bg-accent py-3 text-sm font-bold text-white transition hover:bg-accent-600 disabled:opacity-50">
+              {busy ? 'Đang xử lý…' : 'Xác nhận và tạo tài khoản'}
+            </button>
+            <div className="flex justify-between text-xs font-semibold">
+              <button type="button" disabled={busy} onClick={resend} className="text-brand-500 hover:underline disabled:opacity-50">
+                Gửi lại mã
+              </button>
+              <button type="button" disabled={busy} onClick={() => setSentTo(null)} className="text-muted hover:text-ink disabled:opacity-50">
+                Đổi email
+              </button>
+            </div>
+          </form>
         ) : (
           <div className="mt-5">
             <GoogleButton
@@ -134,18 +180,16 @@ export function AuthDialog() {
                 placeholder="Email"
                 className="w-full rounded-xl border border-line px-3 py-2.5 text-sm outline-none focus:border-brand-500"
               />
-              {tab === 'signin' && (
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mật khẩu"
-                  className="w-full rounded-xl border border-line px-3 py-2.5 text-sm outline-none focus:border-brand-500"
-                />
-              )}
+              <input
+                type="password"
+                required
+                minLength={8}
+                autoComplete={tab === 'save' ? 'new-password' : 'current-password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={tab === 'save' ? 'Mật khẩu (ít nhất 8 ký tự)' : 'Mật khẩu'}
+                className="w-full rounded-xl border border-line px-3 py-2.5 text-sm outline-none focus:border-brand-500"
+              />
               {tab === 'signin' && guest && hasProgress && (
                 <p className="rounded-xl bg-ref/10 p-3 text-xs text-ink">
                   ⚠️ Tiến trình bạn đang có ở chế độ khách sẽ không được chuyển sang tài khoản cũ. Muốn giữ lại, hãy chọn “Tạo tài khoản”.
@@ -153,9 +197,22 @@ export function AuthDialog() {
               )}
               {error && <p className="text-sm text-down">{error}</p>}
               <button disabled={busy} className="w-full rounded-xl bg-accent py-3 text-sm font-bold text-white transition hover:bg-accent-600 disabled:opacity-50">
-                {busy ? 'Đang xử lý…' : tab === 'save' ? 'Gửi email xác nhận' : 'Đăng nhập'}
+                {busy ? 'Đang xử lý…' : tab === 'save' ? 'Gửi mã xác nhận' : 'Đăng nhập'}
               </button>
             </form>
+            {tab === 'save' && (
+              <p className="mt-3 text-center text-xs text-muted">
+                Khi tạo tài khoản, bạn đồng ý với{' '}
+                <Link to="/terms" onClick={() => setMode(null)} className="underline">
+                  Điều khoản sử dụng
+                </Link>{' '}
+                và{' '}
+                <Link to="/privacy" onClick={() => setMode(null)} className="underline">
+                  Chính sách quyền riêng tư
+                </Link>
+                .
+              </p>
+            )}
           </div>
         )}
       </div>
