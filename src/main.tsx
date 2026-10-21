@@ -18,6 +18,8 @@ const router = createBrowserRouter([
       { path: '/learn/:lessonId', lazy: () => import('./pages/LessonPage').then((m) => ({ Component: m.LessonPage })) },
       { path: '/classes', lazy: () => import('./pages/ClassesPage').then((m) => ({ Component: m.ClassesPage })) },
       { path: '/classes/:classId', lazy: () => import('./pages/ClassesPage').then((m) => ({ Component: m.ClassReportPage })) },
+      { path: '/privacy', lazy: () => import('./pages/PrivacyPage').then((m) => ({ Component: m.PrivacyPage })) },
+      { path: '/terms', lazy: () => import('./pages/TermsPage').then((m) => ({ Component: m.TermsPage })) },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },

@@ -21,6 +21,8 @@ const NAV = [
   { to: '/learn', label: 'Học', icon: 'M4 6.5 12 3l8 3.5-8 3.5zM6 9v5c0 1.7 2.7 3 6 3s6-1.3 6-3V9' },
 ]
 
+const LEGAL_PAGES = ['/privacy', '/terms']
+
 function NavIcon({ d }: { d: string }) {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -168,7 +170,7 @@ export function Layout({ children }: { children?: ReactNode }) {
 
       <TutorPanel />
       <Toasts />
-      {loaded && !onboarded && <Onboarding />}
+      {loaded && !onboarded && !LEGAL_PAGES.includes(pathname) && <Onboarding />}
       <AuthDialog />
       <SetPasswordDialog />
     </div>
