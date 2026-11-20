@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { STARTING_CASH } from '@/domain/market'
 import { createAccount, type PlaceResult } from '@/domain/trading'
 import { REVIEW_LESSON_ID } from '@/domain/review'
+import { track } from '@/lib/track'
 import type { Account, Order, OrderRequest, Profile, Quote, QuizAttempt, QuizResult, SessionUser, Stock } from '@/domain/types'
 import { accounts } from '@/services'
 
@@ -49,6 +50,7 @@ export const useUser = create<UserState>()((set, get) => ({
 
   completeOnboarding: async (profile) => {
     set({ profile, onboarded: true })
+    track('onboarding_completed', { level: profile.level })
     await accounts.saveProfile(profile, true)
   },
 

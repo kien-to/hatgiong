@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { track } from '@/lib/track'
 
 export interface Toast {
   id: string
@@ -24,8 +25,14 @@ export const useUI = create<UIState>()((set, get) => ({
   tutorOpen: false,
   authDialog: null,
   toasts: [],
-  setTutorOpen: (tutorOpen) => set({ tutorOpen }),
-  setAuthDialog: (authDialog) => set({ authDialog }),
+  setTutorOpen: (tutorOpen) => {
+    if (tutorOpen && !get().tutorOpen) track('tutor_opened')
+    set({ tutorOpen })
+  },
+  setAuthDialog: (authDialog) => {
+    if (authDialog && !get().authDialog) track('auth_dialog_opened', { mode: authDialog })
+    set({ authDialog })
+  },
   toast: (t) => {
     const id = crypto.randomUUID()
     set({ toasts: [...get().toasts, { ...t, id }].slice(-3) })

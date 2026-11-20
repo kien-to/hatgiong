@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { track } from '@/lib/track'
 import { useAuth } from '@/store/auth'
 import { useUI, type AuthDialogMode } from '@/store/ui'
 import { useUser } from '@/store/user'
@@ -70,8 +71,10 @@ export function AuthDialog() {
   const sendCode = (address: string) =>
     run(async () => {
       const result = await upgradeWithEmail(address)
-      if (result === 'sent') setSentTo(address)
-      else if (result === 'confirmed') {
+      if (result === 'sent') {
+        track('signup_code_sent')
+        setSentTo(address)
+      } else if (result === 'confirmed') {
         const err = await savePassword(password)
         if (err) return err
         setMode(null)

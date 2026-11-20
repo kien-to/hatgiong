@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { Card } from '@/components/ui'
 import { formatDate, formatDecimal, formatPct } from '@/domain/format'
 import { ApiError } from '@/lib/api'
+import { track } from '@/lib/track'
 import { backendAccounts } from '@/services'
 import { classesApi, type ClassReport, type JoinedClass, type OwnedClass } from '@/services/classes'
 import { useAuth } from '@/store/auth'
@@ -62,6 +63,7 @@ export function ClassesPage() {
     e.preventDefault()
     void act(async () => {
       await classesApi.join(code.trim())
+      track('class_joined')
       setCode('')
     })
   }
@@ -70,6 +72,7 @@ export function ClassesPage() {
     e.preventDefault()
     void act(async () => {
       await classesApi.create(name.trim())
+      track('class_created')
       setName('')
     })
   }

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Card } from '@/components/ui'
 
 const CONTACT = 'hotro@hatgiong.org'
-const UPDATED = '21/10/2026'
+const UPDATED = '19/11/2026'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -44,6 +44,10 @@ export function PrivacyPage() {
               <b>Trợ lý Mầm:</b> chúng tôi chỉ lưu số lượng câu hỏi và độ dài câu trả lời để giới hạn sử dụng, không lưu nội dung câu hỏi.
             </li>
             <li>
+              <b>Cách bạn dùng ứng dụng:</b> trang bạn mở và tính năng bạn dùng (ví dụ đặt lệnh, làm bài kiểm tra, hỏi Mầm), kèm loại thiết bị (điện thoại, máy tính
+              bảng hay máy tính). Chúng tôi không ghi lại nội dung bạn gõ.
+            </li>
+            <li>
               <b>Dữ liệu kỹ thuật:</b> nhà cung cấp máy chủ ghi nhật ký truy cập (địa chỉ IP, thời gian, trang được gọi) trong thời gian ngắn để vận hành và chống lạm
               dụng.
             </li>
@@ -57,6 +61,7 @@ export function PrivacyPage() {
             <li>Để Mầm giải thích dựa trên danh mục và bài học hiện tại của bạn.</li>
             <li>Để giáo viên hoặc người tổ chức lớp xem tiến trình của thành viên trong lớp.</li>
             <li>Để gửi email xác nhận tài khoản. Chúng tôi không gửi email quảng cáo.</li>
+            <li>Để biết tính năng nào hữu ích và cải thiện ứng dụng. Dữ liệu này nằm trong cơ sở dữ liệu của chúng tôi, không gửi cho công cụ phân tích bên thứ ba.</li>
           </ul>
         </Section>
 
@@ -79,7 +84,11 @@ export function PrivacyPage() {
 
         <Section title="4. Thời gian lưu trữ">
           <p>Tài khoản khách (chưa đăng ký email) tự động bị xóa sau 30 ngày không sử dụng.</p>
-          <p>Tài khoản đã đăng ký được giữ cho đến khi bạn yêu cầu xóa. Khi xóa, toàn bộ dữ liệu liên quan bị xóa theo.</p>
+          <p>Tài khoản đã đăng ký được giữ cho đến khi bạn yêu cầu xóa. Khi xóa, toàn bộ dữ liệu liên quan bị xóa theo, trừ dữ liệu sử dụng đã ẩn danh như dưới đây.</p>
+          <p>
+            Dữ liệu về cách bạn dùng ứng dụng được giữ tối đa 13 tháng. Khi tài khoản bị xóa, dữ liệu này không còn gắn với tài khoản nào và chỉ còn là số liệu thống kê
+            ẩn danh.
+          </p>
         </Section>
 
         <Section title="5. Quyền của bạn">

@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Stock } from '@/domain/types'
 import { normalize } from '@/lib/text'
+import { track } from '@/lib/track'
 import { useCatalog } from '@/store/catalog'
 import { useMarket } from '@/store/market'
 import { ChangePill, StockLogo } from './ui'
@@ -25,6 +26,7 @@ export function SearchBox({ className = '', autoFocus = false }: { className?: s
   }, [query, stocks, quotes])
 
   const go = (symbol: string) => {
+    track('search_used', { symbol })
     navigate(`/stock/${symbol}`)
     setQuery('')
     setOpen(false)

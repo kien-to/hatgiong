@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { formatCompactVND, formatNumber } from '@/domain/format'
+import { track } from '@/lib/track'
 import { LineChart } from './charts'
 
 export function futureValue(monthly: number, annualPct: number, years: number): number[] {
@@ -17,6 +18,12 @@ export function CompoundCalculator() {
   const [monthly, setMonthly] = useState(2_000_000)
   const [rate, setRate] = useState(10)
   const [years, setYears] = useState(20)
+  const used = useRef(false)
+  const touch = <T,>(set: (v: T) => void) => (v: T) => {
+    if (!used.current) track('calculator_used')
+    used.current = true
+    set(v)
+  }
   const series = useMemo(() => futureValue(monthly, rate, years), [monthly, rate, years])
   const final = series[series.length - 1]
   const contributed = monthly * 12 * years
@@ -25,9 +32,9 @@ export function CompoundCalculator() {
     <div className="rounded-2xl border border-line bg-canvas p-5">
       <div className="font-semibold">🧮 Máy tính lãi kép</div>
       <div className="mt-4 grid gap-4 md:grid-cols-3">
-        <Slider label="Mỗi tháng" value={monthly} display={formatCompactVND(monthly)} min={500_000} max={10_000_000} step={500_000} onChange={setMonthly} />
-        <Slider label="Lợi nhuận/năm" value={rate} display={`${rate}%`} min={0} max={20} step={1} onChange={setRate} />
-        <Slider label="Thời gian" value={years} display={`${years} năm`} min={1} max={40} step={1} onChange={setYears} />
+        <Slider label="Mỗi tháng" value={monthly} display={formatCompactVND(monthly)} min={500_000} max={10_000_000} step={500_000} onChange={touch(setMonthly)} />
+        <Slider label="Lợi nhuận/năm" value={rate} display={`${rate}%`} min={0} max={20} step={1} onChange={touch(setRate)} />
+        <Slider label="Thời gian" value={years} display={`${years} năm`} min={1} max={40} step={1} onChange={touch(setYears)} />
       </div>
       <div className="mt-4">
         <LineChart data={series} color="var(--color-accent-600)" height={140} />

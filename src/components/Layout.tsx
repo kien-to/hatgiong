@@ -1,6 +1,7 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { formatPrice } from '@/domain/format'
+import { track } from '@/lib/track'
 import { useAuth } from '@/store/auth'
 import { useCatalog } from '@/store/catalog'
 import { useMarket } from '@/store/market'
@@ -66,6 +67,7 @@ export function Layout({ children }: { children?: ReactNode }) {
   const loadError = useUser((s) => s.loadError)
   const authStatus = useAuth((s) => s.status)
   const { pathname } = useLocation()
+  const trackedPath = useRef<string | null>(null)
 
   useEffect(() => {
     void useAuth.getState().init()
@@ -90,6 +92,9 @@ export function Layout({ children }: { children?: ReactNode }) {
 
   useEffect(() => {
     window.scrollTo(0, 0)
+    if (trackedPath.current === pathname) return
+    trackedPath.current = pathname
+    track('page_view')
   }, [pathname])
 
   return (

@@ -5,6 +5,7 @@ import { QuizQuestionCard } from '@/components/QuizQuestionCard'
 import { AskButton, Card } from '@/components/ui'
 import { LESSONS, LESSON_BY_ID } from '@/content/lessons'
 import { useAskTutor } from '@/hooks/useTutorContext'
+import { track } from '@/lib/track'
 import { useUser } from '@/store/user'
 
 export function LessonPage() {
@@ -39,6 +40,7 @@ export function LessonPage() {
 
   const submit = () => {
     setSubmitted(true)
+    track('quiz_submitted', { lesson: lesson.id, score, total: lesson.quiz.length })
     void recordQuiz(lesson.id, score, lesson.quiz.length, answers)
   }
 

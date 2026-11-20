@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { track } from '@/lib/track'
 import { ai, type ChatMessage, type TutorContext } from '@/services'
 
 interface TutorState {
@@ -14,6 +15,7 @@ export const useTutor = create<TutorState>()((set, get) => ({
   send: async (text, context) => {
     const trimmed = text.trim()
     if (!trimmed || get().streaming) return
+    track('tutor_question')
     const history = get().messages
     const user: ChatMessage = { id: crypto.randomUUID(), role: 'user', content: trimmed }
     const reply: ChatMessage = { id: crypto.randomUUID(), role: 'assistant', content: '' }

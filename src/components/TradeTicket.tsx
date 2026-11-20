@@ -4,6 +4,7 @@ import { BROKER_FEE_RATE, LOT_SIZE, SELL_TAX_RATE, tickSize } from '@/domain/mar
 import { availableToSell, buyingPower, estimateOrder, holdingsValue, validateOrder, type LessonTopic } from '@/domain/trading'
 import type { OrderType, Quote, Side, Stock } from '@/domain/types'
 import { useAskTutor } from '@/hooks/useTutorContext'
+import { track } from '@/lib/track'
 import { useMarket } from '@/store/market'
 import { useUI } from '@/store/ui'
 import { useUser } from '@/store/user'
@@ -95,10 +96,12 @@ export function TradeTicket({ stock, quote, initialSide = 'buy' }: { stock: Stoc
     setReviewing(false)
     if (!result.ok) {
       const topic = result.error.topic
+      track('order_rejected', { topic: topic ?? null })
       toast({ tone: 'error', title: 'Lệnh bị từ chối', body: result.error.message, ask: topic ? TOPIC_QUESTION[topic] : undefined })
       return
     }
     const o = result.order
+    track('order_placed', { side: o.side, type: req.type, status: o.status })
     if (o.status === 'filled') {
       toast({
         tone: 'success',
